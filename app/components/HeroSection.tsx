@@ -14,13 +14,13 @@ function ChatPreview() {
 
   return (
     <motion.div
-      className="relative w-full max-w-[320px] mx-auto"
+      className="relative w-full max-w-[350px] mx-auto"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Widget shell */}
-      <div className="rounded-2xl border border-border bg-surface/80 backdrop-blur-2xl shadow-2xl overflow-hidden">
+      <div className="rounded-2xl border border-border bg-surface/80 backdrop-blur-2xl shadow-xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-surface-light">
           <div className="relative">
@@ -251,15 +251,15 @@ function StatBadges() {
 /* ─── Main Hero Section ─── */
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden dot-bg">
+    <section className="relative flex items-center justify-center overflow-hidden dot-bg">
       <BackgroundOrbs />
       <SpotlightEffect />
 
       {/* Top gradient line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-40">
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-18 items-center">
+      <div className="relative z-10 max-w-6xl mx-auto min-h-80 mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-40">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left column — Copy */}
           <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
             {/* Badge */}
@@ -346,7 +346,7 @@ export default function HeroSection() {
             </motion.div>
 
             {/* Stat badges */}
-            <StatBadges />
+            {/* <StatBadges /> */}
           </div>
 
           {/* Right column — Chat preview */}
