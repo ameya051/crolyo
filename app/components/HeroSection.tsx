@@ -14,7 +14,7 @@ function ChatPreview() {
 
   return (
     <motion.div
-      className="relative w-full max-w-[350px] mx-auto"
+      className="relative w-full max-w-[350px] mx-auto lg:mx-0"
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -136,8 +136,9 @@ function SlackIcon({ className = "w-4 h-4" }: { className?: string }) {
 /* ─── Floating orbs ─── */
 function BackgroundOrbs() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {/* Primary orb */}
+    <div className="absolute inset-0 overflow-hidden pointer-events-none flex justify-center">
+      <div className="relative w-full max-w-6xl h-full">
+        {/* Primary orb */}
       <motion.div
         className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full"
         style={{
@@ -173,47 +174,12 @@ function BackgroundOrbs() {
         }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
       />
+      </div>
     </div>
   );
 }
 
-/* ─── Spotlight cursor follow ─── */
-function SpotlightEffect() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const mouseX = useMotionValue(0);
-  const mouseY = useMotionValue(0);
 
-  useEffect(() => {
-    const handleMouse = (e: MouseEvent) => {
-      mouseX.set(e.clientX);
-      mouseY.set(e.clientY);
-    };
-    window.addEventListener("mousemove", handleMouse);
-    return () => window.removeEventListener("mousemove", handleMouse);
-  }, [mouseX, mouseY]);
-
-  const spotlightX = useTransform(mouseX, (v) => v - 200);
-  const spotlightY = useTransform(mouseY, (v) => v - 200);
-
-  return (
-    <motion.div
-      ref={containerRef}
-      className="absolute inset-0 pointer-events-none z-0"
-      style={{
-        background: "transparent",
-      }}
-    >
-      <motion.div
-        className="absolute w-[400px] h-[400px] rounded-full"
-        style={{
-          x: spotlightX,
-          y: spotlightY,
-          background: "radial-gradient(circle, rgba(249, 115, 22, 0.06) 0%, transparent 70%)",
-        }}
-      />
-    </motion.div>
-  );
-}
 
 /* ─── Stat badges ─── */
 function StatBadges() {
@@ -253,7 +219,6 @@ export default function HeroSection() {
   return (
     <section className="relative flex items-center justify-center overflow-hidden dot-bg">
       <BackgroundOrbs />
-      <SpotlightEffect />
 
       {/* Top gradient line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
@@ -261,7 +226,7 @@ export default function HeroSection() {
       <div className="relative z-10 max-w-6xl mx-auto min-h-80 mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-40">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left column — Copy */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left">
+          <div className="flex flex-col items-start text-left">
             {/* Badge */}
             <motion.div
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-muted/50 border border-border mb-4"
@@ -282,26 +247,28 @@ export default function HeroSection() {
             >
               Support visitors{" "}
               <br className="hidden sm:block" />
-              <span className="relative inline-block whitespace-nowrap">
-                <span className="relative z-10">directly</span>
-                <svg
-                  className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-3 sm:h-4 text-brand -z-10"
-                  viewBox="0 0 100 20"
-                  preserveAspectRatio="none"
-                  fill="none"
-                >
-                  <motion.path
-                    d="M 2,15 Q 50,5 98,12"
-                    stroke="currentColor"
-                    strokeWidth="8"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    transition={{ duration: 0.8, delay: 1, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </svg>
-              </span>{" "}
-              from Slack
+              <span className="whitespace-nowrap">
+                <span className="relative inline-block">
+                  <span className="relative z-10">directly</span>
+                  <svg
+                    className="absolute -bottom-1 sm:-bottom-2 left-0 w-full h-3 sm:h-4 text-brand -z-10"
+                    viewBox="0 0 100 20"
+                    preserveAspectRatio="none"
+                    fill="none"
+                  >
+                    <motion.path
+                      d="M 2,15 Q 50,5 98,12"
+                      stroke="currentColor"
+                      strokeWidth="8"
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0, opacity: 0 }}
+                      animate={{ pathLength: 1, opacity: 1 }}
+                      transition={{ duration: 0.8, delay: 1, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  </svg>
+                </span>{" "}
+                from Slack
+              </span>
             </motion.h1>
 
             {/* Subtitle */}
@@ -316,7 +283,7 @@ export default function HeroSection() {
 
             {/* CTA Buttons */}
             <motion.div
-              className="flex flex-col sm:flex-row items-center justify-center lg:justify-start w-full sm:w-auto gap-4 mt-8 sm:mt-10"
+              className="flex flex-col sm:flex-row items-start sm:items-center justify-start w-full sm:w-auto gap-4 mt-8 sm:mt-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
@@ -350,9 +317,9 @@ export default function HeroSection() {
           </div>
 
           {/* Right column — Chat preview */}
-          <div className="relative flex items-center justify-center">
+          <div className="relative flex items-center justify-center lg:justify-end">
             {/* Glow behind the widget */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex items-center justify-center lg:justify-end pointer-events-none">
               <div className="w-[340px] h-[340px] rounded-full bg-brand/10 blur-[100px] animate-pulse-glow" />
             </div>
             <ChatPreview />

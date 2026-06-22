@@ -109,6 +109,11 @@ body {
   overflow-x: hidden;
 }
 
+::selection {
+  background-color: var(--brand);
+  color: white;
+}
+
 /* Noise texture overlay for depth */
 body::before {
   content: "";
