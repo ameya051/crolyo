@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Confirm your email – Crolyo</title>
+  <meta name="description" content="Verify your email address to activate your Crolyo account." />
+
+  <!--
+      Supabase "Confirm signup" template
+      CTA URL: {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email
+    -->
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap');
+
+    /* ── Reset ── */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body,
+    table,
+    td,
+    a {
+      -webkit-text-size-adjust: 100%;
+      -ms-text-size-adjust: 100%;
+    }
+
+    table,
+    td {
+      mso-table-lspace: 0pt;
+      mso-table-rspace: 0pt;
+      border-collapse: collapse;
+    }
+
+    img {
+      border: 0;
+      outline: none;
+      text-decoration: none;
+      -ms-interpolation-mode: bicubic;
+      display: block;
+    }
+
+    a {
+      text-decoration: none;
+    }
+
+    /* ── Design tokens (inlined from globals.css) ── */
+    /*
+        --brand:          #f97316   (orange-500)
+        --brand-light:    #fb923c   (orange-400)
+        --gradient-start: #f97316
+        --gradient-end:   #fbbf24   (amber-400)
+        --background:     #ffffff
+        --foreground:     #111111
+        --surface:        #f6f6f8
+        --surface-light:  #ececef
+        --text-muted:     #6b6b7b
+        --border:         #e8e8ec
+        font-family:      Manrope, system-ui, sans-serif
+        --radius:         0.625rem → 10px
+      */
+
+    body, table, td, p, a, h1, span {
+      font-family: 'Manrope', 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      background-color: #f6f6f8;
+      color: #111111;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+    }
+
+    .email-wrapper {
+      width: 100%;
+      background-color: #f6f6f8;
+      padding: 40px 16px;
+    }
+
+    .email-card {
+      max-width: 520px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 16px;
+      border: 1px solid #e8e8ec;
+      overflow: hidden;
+      /* Subtle shadow for depth */
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06), 0 1px 4px rgba(0, 0, 0, 0.04);
+    }
+
+    /* ── Header ── */
+    .email-header {
+      background-color: #ffffff;
+      padding: 32px 40px 0;
+      text-align: center;
+    }
+
+    .logo-mark {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 0;
+    }
+
+    .logo-img {
+      display: block;
+      width: auto;
+      height: 28px;
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      color: #111111;
+      letter-spacing: -0.5px;
+    }
+
+    /* ── Body ── */
+    .email-body {
+      padding: 40px 40px 32px;
+    }
+
+    .greeting {
+      font-size: 13px;
+      font-weight: 600;
+      color: #f97316;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 12px;
+    }
+
+    .heading {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111111;
+      letter-spacing: -0.5px;
+      line-height: 1.25;
+      margin-bottom: 16px;
+    }
+
+    .body-text {
+      font-size: 15px;
+      line-height: 1.65;
+      color: #6b6b7b;
+      margin-bottom: 32px;
+    }
+
+    /* ── CTA button ── */
+    .cta-wrap {
+      text-align: center;
+      margin-bottom: 36px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 14px 36px;
+      background-color: #f97316;
+      color: #ffffff !important;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      border-radius: 10px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(249, 115, 22, 0.25);
+      transition: opacity 0.2s;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      border: none;
+      border-top: 1px solid #ececef;
+      margin: 0 0 28px;
+    }
+
+    /* ── Fallback URL section ── */
+    .fallback-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b6b7b;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 8px;
+    }
+
+    .fallback-url {
+      font-size: 12px;
+      color: #f97316;
+      word-break: break-all;
+      background-color: #f6f6f8;
+      border: 1px solid #ececef;
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-family: 'Courier New', Courier, monospace;
+      line-height: 1.5;
+    }
+
+    /* ── Footer ── */
+    .email-footer {
+      padding: 24px 40px 32px;
+      text-align: center;
+      border-top: 1px solid #f0f0f4;
+    }
+
+    .footer-text {
+      font-size: 12px;
+      color: #6b6b7b;
+      line-height: 1.7;
+    }
+
+    .footer-text a {
+      color: #f97316;
+      font-weight: 600;
+    }
+
+    .expire-note {
+      display: inline-block;
+      margin-top: 12px;
+      font-size: 11px;
+      color: #9898b0;
+      background-color: #f6f6f8;
+      border-radius: 20px;
+      padding: 4px 12px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 560px) {
+      .email-header {
+        padding: 28px 24px 24px;
+      }
+
+      .email-body {
+        padding: 28px 24px 24px;
+      }
+
+      .email-footer {
+        padding: 20px 24px 28px;
+      }
+
+      .heading {
+        font-size: 22px;
+      }
+
+      .cta-button {
+        padding: 13px 28px;
+        font-size: 14px;
+      }
+    }
+  </style>
+
+
+</head>
+
+<body>
+  <div class="email-wrapper">
+    <table role="presentation" class="email-card" width="100%" cellpadding="0" cellspacing="0">
+
+      <!-- ── Header ── -->
+      <tr>
+        <td class="email-header">
+          <div class="logo-mark">
+            <img src="{{ .SiteURL }}/logo.png" alt="Crolyo Logo" class="logo-img" height="28" />
+            <span class="logo-text">Crolyo</span>
+          </div>
+        </td>
+      </tr>
+
+      <!-- ── Body ── -->
+      <tr>
+        <td class="email-body">
+          <p class="greeting">Email Verification</p>
+          <h1 class="heading">Confirm your email address</h1>
+          <p class="body-text">
+            Thanks for signing up! To get started, please verify your email address by clicking
+            the button below. This helps us keep your account secure.
+          </p>
+
+          <!-- CTA -->
+          <div class="cta-wrap">
+            <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email" class="cta-button"
+              id="confirm-email-cta" target="_blank" rel="noopener noreferrer">
+              Confirm my email
+            </a>
+          </div>
+
+          <hr class="divider" />
+
+          <!-- Fallback plain URL -->
+          <p class="fallback-label">Or copy this link</p>
+          <p class="fallback-url">
+            {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&amp;type=email
+          </p>
+        </td>
+      </tr>
+
+      <!-- ── Footer ── -->
+      <tr>
+        <td class="email-footer">
+          <p class="footer-text">
+            If you didn't create a Crolyo account, you can safely ignore this email.<br />
+            Questions? Reach us at
+            <a href="mailto:support@crolyo.com">support@crolyo.com</a>
+          </p>
+          <span class="expire-note">⏱ This link expires in 24 hours</span>
+        </td>
+      </tr>
+
+    </table>
+  </div>
+</body>
+
+</html>

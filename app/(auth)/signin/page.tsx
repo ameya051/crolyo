@@ -5,18 +5,38 @@ import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { signInWithGoogle } from "@/app/actions/auth";
+import { signInWithGoogle, signInWithEmail } from "@/app/actions/auth";
 import { useSearchParams } from "next/navigation";
 import { useState, Suspense } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { signInSchema, type SignInValues } from "@/lib/validations/auth";
 
 function SignInForm() {
   const searchParams = useSearchParams();
-  const error = searchParams.get("error");
-  const [loading, setLoading] = useState(false);
+  const urlError = searchParams.get("error");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+  });
 
   const handleGoogleSignIn = async () => {
-    setLoading(true);
+    setGoogleLoading(true);
     await signInWithGoogle();
+  };
+
+  const onSubmit = async (data: SignInValues) => {
+    setAuthError(null);
+    const result = await signInWithEmail(data);
+    if (result && "error" in result) {
+      setAuthError(result.error);
+    }
   };
 
   return (
@@ -43,20 +63,21 @@ function SignInForm() {
       </div>
 
       <div className="relative z-10">
-        {error && (
+        {(urlError || authError) && (
           <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm text-center">
-            {error === "auth"
-              ? "Authentication failed. Please try again."
-              : "Something went wrong. Please try again."}
+            {authError ||
+              (urlError === "auth"
+                ? "Authentication failed. Please try again."
+                : "Something went wrong. Please try again.")}
           </div>
         )}
 
         <Button
           onClick={handleGoogleSignIn}
-          disabled={loading}
+          disabled={googleLoading}
           className="cursor-pointer w-full flex items-center justify-center gap-2 bg-background border border-border text-foreground font-medium rounded-xl py-3.5 hover:bg-surface transition-colors shadow-sm mb-6 disabled:opacity-50"
         >
-          {loading ? (
+          {googleLoading ? (
             <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -69,7 +90,7 @@ function SignInForm() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
             </svg>
           )}
-          {loading ? "Redirecting..." : "Continue with Google"}
+          {googleLoading ? "Redirecting..." : "Continue with Google"}
         </Button>
 
         <div className="relative mb-6">
@@ -81,7 +102,7 @@ function SignInForm() {
           </div>
         </div>
 
-        <form className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email" className="text-xs text-muted-foreground font-semibold px-1">Email</Label>
             <Input
@@ -89,7 +110,11 @@ function SignInForm() {
               type="email"
               placeholder="you@example.com"
               className="bg-background border-border/60 shadow-sm h-10 rounded-xl px-3.5 focus-visible:ring-1 focus-visible:ring-primary/50"
+              {...register("email")}
             />
+            {errors.email && (
+              <p className="text-xs text-red-600 dark:text-red-400 px-1">{errors.email.message}</p>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -104,11 +129,16 @@ function SignInForm() {
               type="password"
               placeholder="••••••••"
               className="bg-background border-border/60 shadow-sm h-11 rounded-xl px-4 focus-visible:ring-1 focus-visible:ring-primary/50"
+              {...register("password")}
             />
+            {errors.password && (
+              <p className="text-xs text-red-600 dark:text-red-400 px-1">{errors.password.message}</p>
+            )}
           </div>
 
           <Button
             type="submit"
+            disabled={isSubmitting}
             className="cursor-pointer w-full mt-6 font-semibold rounded-xl py-4 transition-all
               bg-gradient-to-b from-orange-400 to-orange-500 text-white
               shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),_0_1px_2px_rgba(0,0,0,0.1)]
@@ -117,7 +147,7 @@ function SignInForm() {
               hover:opacity-90 active:scale-[0.98]
               ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           >
-            Login
+            {isSubmitting ? "Logging in..." : "Login"}
           </Button>
         </form>
       </div>

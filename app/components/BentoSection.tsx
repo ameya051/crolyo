@@ -60,11 +60,11 @@ function SetupSkeleton() {
             <br />
             <span className="pl-4 text-slack-green">src</span>
             <span className="text-foreground">=</span>
-            <span className="text-muted-foreground">"https://crolyo.com/widget.js"</span>
+            <span className="text-muted-foreground">&quot;https://crolyo.com/widget.js&quot;</span>
             <br />
             <span className="pl-4 text-slack-green">data-site</span>
             <span className="text-foreground">=</span>
-            <span className="text-muted-foreground">"site_abc123"</span>
+            <span className="text-muted-foreground">&quot;site_abc123&quot;</span>
             <br />
             <span className="text-brand font-medium">{"></script>"}</span>
           </motion.div>

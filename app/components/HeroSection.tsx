@@ -1,8 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { motion, useMotionValue, useTransform } from "motion/react";
-import { useEffect, useRef } from "react";
+import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
 
 /* ─── Animated chat widget preview ─── */

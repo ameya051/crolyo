@@ -132,7 +132,7 @@ export default function WorkflowSection() {
               </h2>
               
               <p className="text-lg text-muted-foreground leading-relaxed mb-8">
-                You're coding, and a potential customer has a question on your pricing page. By the time you get the email, log into another dashboard, and reply... they've already left.
+                You&apos;re coding, and a potential customer has a question on your pricing page. By the time you get the email, log into another dashboard, and reply... they&apos;ve already left.
               </p>
               
               <ul className="space-y-4">
