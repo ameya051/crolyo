@@ -10,9 +10,9 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Crolyo — Slack-Native Live Chat for Your Website",
+  title: "Crolyo - Slack-Native Live Chat for Your Website",
   description:
-    "Drop a lightweight chat widget on your site. Every visitor message lands in your Slack channel — reply right there, in real-time.",
+    "Drop a lightweight chat widget on your site. Every visitor message lands in your Slack channel. Reply right there, in real-time.",
 };
 
 export default function RootLayout({
@@ -26,7 +26,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${manrope.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

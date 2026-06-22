@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { motion, useMotionValue, useTransform } from "motion/react";
 import { useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 /* ─── Animated chat widget preview ─── */
 function ChatPreview() {
@@ -216,6 +217,8 @@ function StatBadges() {
 
 /* ─── Main Hero Section ─── */
 export default function HeroSection() {
+  const router = useRouter();
+
   return (
     <section className="relative flex items-center justify-center overflow-hidden dot-bg">
       <BackgroundOrbs />
@@ -223,7 +226,7 @@ export default function HeroSection() {
       {/* Top gradient line */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px bg-gradient-to-r from-transparent via-brand/40 to-transparent" />
 
-      <div className="relative z-10 max-w-6xl mx-auto min-h-80 mx-auto px-4 sm:px-6 py-24 sm:py-32 lg:py-40">
+      <div className="relative z-10 max-w-6xl mx-auto min-h-80 mx-auto px-4 sm:px-6 py-24 sm:py-32">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
           {/* Left column — Copy */}
           <div className="flex flex-col items-start text-left">
@@ -289,7 +292,7 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
               <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="w-full sm:w-auto">
-                <Button className="w-full sm:w-auto px-8 py-3.5 h-auto rounded-xl text-sm font-semibold">
+                <Button onClick={() => router.push("/signup")} className="w-full sm:w-auto px-8 py-3.5 h-auto rounded-xl text-sm font-semibold transition-all bg-gradient-to-b from-orange-400 to-orange-500 text-white shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),_0_1px_2px_rgba(0,0,0,0.1)] dark:from-orange-500 dark:to-orange-600 dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),_0_1px_2px_rgba(0,0,0,0.4)] hover:opacity-90 active:scale-[0.98] ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 flex items-center justify-center border-0 group/button">
                   <span className="flex items-center justify-center gap-2">
                     Get Started Free
                     <svg className="w-4 h-4 transition-transform group-hover/button:translate-x-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

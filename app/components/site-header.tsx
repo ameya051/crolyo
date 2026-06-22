@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -63,11 +63,11 @@ export function SiteHeader() {
                 <Link href="/docs" className="cursor-pointer w-full">Docs</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Link href="#" className="cursor-pointer w-full">Login</Link>
+                <Link href="/signin" className="cursor-pointer w-full">Login</Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem>
-                <Link href="#" className="cursor-pointer w-full font-medium text-brand">Sign up</Link>
+                <Link href="/signup" className="cursor-pointer w-full font-medium text-brand">Sign up</Link>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -78,12 +78,12 @@ export function SiteHeader() {
           <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
             Docs
           </Link>
-          <Button variant="ghost" className="text-sm font-medium h-9 px-4">
+          <Link href="/signin" className={buttonVariants({ variant: "ghost", className: "text-sm font-medium h-9 px-4" })}>
             Login
-          </Button>
-          <Button className="text-sm font-medium h-9 px-4 bg-brand text-white hover:bg-brand/90">
+          </Link>
+          <Link href="/signup" className={buttonVariants({ className: "text-sm font-medium h-9 px-4 bg-brand text-white hover:bg-brand/90" })}>
             Sign up
-          </Button>
+          </Link>
         </div>
       </motion.div>
     </header>

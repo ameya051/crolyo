@@ -89,6 +89,8 @@ erDiagram
         uuid id PK
         string email
         string name
+        timestamp created_at
+        timestamp updated_at
     }
 
     SITES {
@@ -96,12 +98,13 @@ erDiagram
         uuid user_id FK
         string name
         string slack_workspace_id
-        string slack_access_token "Bot Token for this specific site"
+        string slack_bot_token "Bot Token for this specific site"
         string slack_channel_id "Where this site's chats are routed"
         string primary_color
         string welcome_message
         string[] allowed_domains
         timestamp created_at
+        timestamp updated_at
     }
 
     CONVERSATIONS {
@@ -111,6 +114,7 @@ erDiagram
         string slack_thread_ts "Timestamp of root message"
         string status "enum: open, closed"
         timestamp created_at
+        timestamp updated_at
     }
 
     MESSAGES {
@@ -120,6 +124,7 @@ erDiagram
         string sender_id "Visitor session ID or Slack User ID"
         string content
         timestamp created_at
+        timestamp updated_at
     }
 ```
 
