@@ -47,7 +47,7 @@ export async function signInWithEmail(
     return { error: "Invalid email or password." };
   }
 
-  redirect("/dashboard");
+  redirect("/overview");
 }
 
 export async function signUpWithEmail(

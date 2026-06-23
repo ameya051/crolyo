@@ -65,6 +65,7 @@
   --color-gradient-start: var(--gradient-start);
   --color-gradient-end: var(--gradient-end);
   --color-slack-green: var(--slack-green);
+  --color-slack-aubergine: var(--slack-aubergine);
   --color-grid-line: var(--grid-line);
   --font-sans: var(--font-manrope);
   --font-heading: var(--font-manrope);

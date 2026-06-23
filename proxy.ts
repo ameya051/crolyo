@@ -33,17 +33,22 @@ export async function proxy(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
-  // Protect /dashboard — redirect unauthenticated users to /signin
-  if (!user && pathname.startsWith("/dashboard")) {
+  // Protect the (protected) route group — redirect unauthenticated users to /signin
+  if (
+    !user &&
+    (pathname.startsWith("/overview") ||
+      pathname.startsWith("/sites") ||
+      pathname.startsWith("/settings"))
+  ) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
     return NextResponse.redirect(url);
   }
 
-  // Redirect authenticated users away from auth pages to /dashboard
+  // Redirect authenticated users away from auth pages to /overview
   if (user && (pathname === "/signin" || pathname === "/signup")) {
     const url = request.nextUrl.clone();
-    url.pathname = "/dashboard";
+    url.pathname = "/overview";
     return NextResponse.redirect(url);
   }
 
