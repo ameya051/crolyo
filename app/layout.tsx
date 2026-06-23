@@ -10,9 +10,35 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Crolyo - Slack-Native Live Chat for Your Website",
+  metadataBase: new URL("https://crolyo.ameyashr.in"),
+  title: {
+    default: "Crolyo - Slack-Native Live Chat for Your Website",
+    template: "%s — Crolyo",
+  },
   description:
     "Drop a lightweight chat widget on your site. Every visitor message lands in your Slack channel. Reply right there, in real-time.",
+  openGraph: {
+    type: "website",
+    siteName: "Crolyo",
+    title: "Crolyo - Slack-Native Live Chat for Your Website",
+    description:
+      "Drop a lightweight chat widget on your site. Every visitor message lands in your Slack channel. Reply right there, in real-time.",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Crolyo — Slack-native live chat for your website",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Crolyo - Slack-Native Live Chat for Your Website",
+    description:
+      "Drop a lightweight chat widget on your site. Every visitor message lands in your Slack channel. Reply right there, in real-time.",
+    images: ["/opengraph-image.png"],
+  },
 };
 
 export default function RootLayout({
