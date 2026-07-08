@@ -1,14 +1,11 @@
 import Link from "next/link";
 import {
   ArrowRightIcon,
-  CheckCircle2Icon,
-  MessageSquareIcon,
-  PlugIcon,
   PlusIcon,
 } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
-import { mockActivity, mockSites, mockStats } from "@/app/(protected)/_lib/mock-data";
+import { getSitesForUser } from "@/lib/data/sites";
 import { EmptyState } from "@/components/dashboard/empty-state";
 import { Reveal } from "@/components/dashboard/reveal";
 import { StatusBadge } from "@/components/dashboard/status-badge";
@@ -18,24 +15,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 function firstName(name: string) {
   return name.split(" ")[0];
 }
-
-function formatRelative(iso: string) {
-  const then = new Date(iso).getTime();
-  const now = Date.now();
-  const mins = Math.floor(Math.max(0, now - then) / 60000);
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-const activityIcon = {
-  message: MessageSquareIcon,
-  resolved: CheckCircle2Icon,
-  connected: PlugIcon,
-  installed: CheckCircle2Icon,
-} as const;
 
 export default async function DashboardOverviewPage() {
   const supabase = await createClient();
@@ -48,7 +27,8 @@ export default async function DashboardOverviewPage() {
     user?.email?.split("@")[0] ||
     "there";
 
-  const hasSites = mockSites.length > 0;
+  const sites = await getSitesForUser();
+  const hasSites = sites.length > 0;
 
   return (
     <div className="space-y-10">
@@ -94,8 +74,7 @@ export default async function DashboardOverviewPage() {
                 </Link>
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {mockSites.map((site) => {
-                  const stats = mockStats[site.id];
+                {sites.map((site) => {
                   return (
                     <Link
                       key={site.id}
@@ -125,7 +104,7 @@ export default async function DashboardOverviewPage() {
                             </StatusBadge>
                           </div>
                           <p className="mt-3 text-xs text-muted-foreground">
-                            {stats?.openConversations ?? 0} open · {stats?.totalVisitorsThisMonth.toLocaleString() ?? 0} visitors this month
+                            0 open · 0 visitors this month
                           </p>
                         </CardContent>
                       </Card>
@@ -136,29 +115,6 @@ export default async function DashboardOverviewPage() {
             </section>
           </Reveal>
 
-          <Reveal delay={0.05}>
-            <section>
-              <h2 className="mb-3 font-heading text-base font-semibold tracking-tight text-foreground">
-                Recent activity
-              </h2>
-              <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
-                {mockActivity.map((item) => {
-                  const Icon = activityIcon[item.kind];
-                  return (
-                    <div key={item.id} className="flex items-center gap-3 px-4 py-3.5">
-                      <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
-                        <Icon className="size-4" />
-                      </span>
-                      <p className="min-w-0 flex-1 truncate text-sm text-foreground">{item.text}</p>
-                      <span className="shrink-0 text-xs text-muted-foreground">
-                        {formatRelative(item.at)}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </Reveal>
         </>
       )}
     </div>

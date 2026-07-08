@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Topbar } from "@/components/dashboard/topbar";
 import { Toaster } from "@/components/ui/sonner";
+import { getSitesForUser } from "@/lib/data/sites";
 
 export default async function ProtectedLayout({
   children,
@@ -26,10 +27,11 @@ export default async function ProtectedLayout({
   const email = user.email ?? "";
 
   const profile = { avatarUrl, fullName, email } as const;
+  const sites = await getSitesForUser();
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <Topbar user={profile} />
+      <Topbar user={profile} sites={sites} />
       <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
         {children}
       </main>

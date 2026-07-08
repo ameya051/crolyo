@@ -14,16 +14,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mockSites } from "@/app/(protected)/_lib/mock-data";
+import type { Site } from "@/app/(protected)/_lib/types";
 import { cn } from "@/lib/utils";
 
-export function SiteSwitcher() {
+export function SiteSwitcher({ sites }: { sites: Site[] }) {
   const pathname = usePathname();
   const router = useRouter();
 
   const match = pathname.match(/^\/sites\/([^/]+)/);
   const currentSiteId = match?.[1];
-  const currentSite = mockSites.find((s) => s.id === currentSiteId);
+  const currentSite = sites.find((s) => s.id === currentSiteId);
   const label = currentSite ? currentSite.name : "Overview";
 
   return (
@@ -63,7 +63,7 @@ export function SiteSwitcher() {
               <CheckIcon className="ml-auto size-3.5 text-primary" />
             ) : null}
           </DropdownMenuItem>
-          {mockSites.map((site) => {
+          {sites.map((site) => {
             const isActive = site.id === currentSiteId;
             return (
               <DropdownMenuItem

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { ArrowLeftIcon, CheckIcon, PlugIcon } from "lucide-react";
 import { toast } from "sonner";
 
+import { createSite } from "@/app/actions/sites";
 import { EmbedSnippet } from "@/components/dashboard/embed-snippet";
 import { Reveal } from "@/components/dashboard/reveal";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -14,28 +14,39 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function NewSitePage() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [color, setColor] = useState("#f97316");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [created, setCreated] = useState<{ id: string; name: string; domain: string } | null>(null);
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !domain.trim()) {
       toast.error("Add a site name and a domain to continue.");
       return;
     }
-    const id = `site_${Math.random().toString(36).slice(2, 10)}`;
-    setCreated({ id, name: name.trim(), domain: domain.trim().replace(/^https?:\/\//, "") });
+
+    setIsSubmitting(true);
+    const result = await createSite({
+      name: name.trim(),
+      domain: domain.trim().replace(/^https?:\/\//, ""),
+      primaryColor: color,
+    });
+    setIsSubmitting(false);
+
+    if (result.error || !result.site) {
+      toast.error(result.error ?? "Could not create site.");
+      return;
+    }
+
+    setCreated({
+      id: result.site.id,
+      name: result.site.name,
+      domain: result.site.domain,
+    });
     toast.success("Site created", {
       description: "Next, connect Slack and drop the widget on your site.",
-    });
-  };
-
-  const handleConnectSlack = () => {
-    toast.info("Slack OAuth isn't wired up yet", {
-      description: "You can do this later from the site's Slack tab.",
     });
   };
 
@@ -74,7 +85,10 @@ export default function NewSitePage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button onClick={handleConnectSlack} className="h-9 gap-2 px-4">
+            <Button
+              className="h-9 gap-2 px-4"
+              render={<a href={`/api/slack/install?site_id=${created.id}`} />}
+            >
               <PlugIcon className="size-4" />
               Connect Slack
             </Button>
@@ -89,7 +103,7 @@ export default function NewSitePage() {
           <Button
             variant="outline"
             className="h-9 px-4"
-            onClick={() => router.push("/overview")}
+            onClick={() => window.location.href = "/overview"}
           >
             Done
           </Button>
@@ -158,7 +172,9 @@ export default function NewSitePage() {
             <Link href="/overview" className={buttonVariants({ variant: "ghost", className: "h-9 px-3" })}>
               Cancel
             </Link>
-            <Button type="submit" className="h-9 px-4">Create site</Button>
+            <Button type="submit" disabled={isSubmitting} className="h-9 px-4">
+              {isSubmitting ? "Creating…" : "Create site"}
+            </Button>
           </div>
         </form>
       </Card>

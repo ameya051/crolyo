@@ -9,7 +9,7 @@
 
   <!--
       Supabase "Confirm signup" template
-      CTA URL: {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email
+      CTA URL: {{ .SiteURL }}/api/auth/callback?token_hash={{ .TokenHash }}&type=email
     -->
 
   <style>
@@ -285,7 +285,7 @@
 
           <!-- CTA -->
           <div class="cta-wrap">
-            <a href="{{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&type=email" class="cta-button"
+            <a href="{{ .SiteURL }}/api/auth/callback?token_hash={{ .TokenHash }}&type=email" class="cta-button"
               id="confirm-email-cta" target="_blank" rel="noopener noreferrer">
               Confirm my email
             </a>
@@ -296,7 +296,7 @@
           <!-- Fallback plain URL -->
           <p class="fallback-label">Or copy this link</p>
           <p class="fallback-url">
-            {{ .SiteURL }}/auth/callback?token_hash={{ .TokenHash }}&amp;type=email
+            {{ .SiteURL }}/api/auth/callback?token_hash={{ .TokenHash }}&amp;type=email
           </p>
         </td>
       </tr>

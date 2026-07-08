@@ -1,6 +1,5 @@
 # Technical Product Requirements Document (PRD)
-**Project**: Slack-Native Website Chat Platform (Foxchat-Inspired)
-**Version**: 1.3
+**Project**: Slack-Native Website Chat Platform
 
 ## 1. Product Vision & Goals
 A lightweight, embeddable website chat widget that routes visitor conversations directly into Slack. It enables two-way, real-time messaging between website visitors and support teams (who remain entirely within Slack), removing the need for a separate customer support dashboard.
@@ -144,8 +143,8 @@ erDiagram
 *   `POST /api/widget/messages`: Send a new message from the visitor.
 
 ### 4.2 Slack Integration
-*   `GET /slack/install`: Initiates Slack OAuth flow.
-*   `GET /slack/oauth_redirect`: Exchanges code for access token and saves it to the `sites` table.
+*   `GET /api/slack/install`: Initiates Slack OAuth flow.
+*   `GET /api/slack/oauth_redirect`: Exchanges code for access token and saves it to the `sites` table.
 *   `POST /slack/events`: The webhook endpoint Slack hits when an event occurs. 
 
 ---

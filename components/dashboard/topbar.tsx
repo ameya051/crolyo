@@ -5,8 +5,9 @@ import Image from "next/image";
 
 import { SiteSwitcher } from "@/components/dashboard/site-switcher";
 import { UserMenu, type DashboardUser } from "@/components/dashboard/user-menu";
+import type { Site } from "@/app/(protected)/_lib/types";
 
-export function Topbar({ user }: { user: DashboardUser }) {
+export function Topbar({ user, sites }: { user: DashboardUser; sites: Site[] }) {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
       <Link
@@ -25,7 +26,7 @@ export function Topbar({ user }: { user: DashboardUser }) {
         </span>
       </Link>
 
-      <SiteSwitcher />
+      <SiteSwitcher sites={sites} />
 
       <div className="ml-auto flex items-center gap-2">
         <UserMenu user={user} />

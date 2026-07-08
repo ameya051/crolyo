@@ -2,6 +2,27 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+const publicRoutes = [
+  "/signin",
+  "/signup",
+  "/api/auth/callback",
+  "/api/slack/oauth_redirect",
+];
+
+const protectedPageRoutes = [
+  "/overview",
+  "/sites",
+  "/settings",
+];
+
+const protectedApiRoutes = [
+  "/api/slack/install",
+];
+
+function matchPrefix(pathname: string, patterns: string[]): boolean {
+  return patterns.some((p) => pathname === p || pathname.startsWith(p + "/"));
+}
+
 export async function proxy(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
 
@@ -26,26 +47,31 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // Refresh the session — this is critical for keeping the auth state alive
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
 
-  // Protect the (protected) route group — redirect unauthenticated users to /signin
-  if (
-    !user &&
-    (pathname.startsWith("/overview") ||
-      pathname.startsWith("/sites") ||
-      pathname.startsWith("/settings"))
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/signin";
-    return NextResponse.redirect(url);
+  if (matchPrefix(pathname, publicRoutes)) {
+    return supabaseResponse;
   }
 
-  // Redirect authenticated users away from auth pages to /overview
+  if (!user) {
+    if (matchPrefix(pathname, protectedApiRoutes)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/signin";
+      url.searchParams.set("error", "auth");
+      return NextResponse.redirect(url);
+    }
+
+    if (matchPrefix(pathname, protectedPageRoutes)) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/signin";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && (pathname === "/signin" || pathname === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/overview";
@@ -57,13 +83,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt (metadata files)
-     * - public assets (images, etc.)
-     */
     "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -6,7 +6,7 @@ import type {
 } from "./types"
 
 export const mockSites: Site[] = [
-  {
+  /* {
     id: "site_acme",
     name: "Acme Store",
     domain: "acmestore.com",
@@ -31,7 +31,7 @@ export const mockSites: Site[] = [
     slackChannelName: "#chat",
     widgetStatus: "not-installed",
     createdAt: "2026-06-18T09:30:00.000Z",
-  },
+  }, */
 ]
 
 export const mockStats: Record<string, OverviewStats> = {

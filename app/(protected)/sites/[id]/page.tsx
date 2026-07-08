@@ -6,11 +6,7 @@ import {
   SlidersHorizontalIcon,
 } from "lucide-react";
 
-import {
-  getSiteById,
-  mockConversations,
-  mockStats,
-} from "@/app/(protected)/_lib/mock-data";
+import { getSiteById } from "@/lib/data/sites";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { TabOverview } from "@/components/dashboard/tab-overview";
 import { TabWidget } from "@/components/dashboard/tab-widget";
@@ -24,7 +20,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const site = getSiteById(id);
+  const site = await getSiteById(id);
   return { title: site ? site.name : "Site" };
 }
 
@@ -34,15 +30,15 @@ export default async function SitePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const site = getSiteById(id);
+  const site = await getSiteById(id);
   if (!site) notFound();
 
-  const stats = mockStats[site.id] ?? {
+  const stats = {
     openConversations: 0,
     totalVisitorsThisMonth: 0,
     avgResponseTime: "—",
   };
-  const conversations = mockConversations[site.id] ?? [];
+  const conversations: never[] = [];
 
   return (
     <div className="space-y-8">
