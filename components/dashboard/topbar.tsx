@@ -4,10 +4,11 @@ import Link from "next/link";
 import Image from "next/image";
 
 import { SiteSwitcher } from "@/components/dashboard/site-switcher";
+import { useSites } from "@/components/dashboard/sites-provider";
 import { UserMenu, type DashboardUser } from "@/components/dashboard/user-menu";
-import type { Site } from "@/app/(protected)/_lib/types";
 
-export function Topbar({ user, sites }: { user: DashboardUser; sites: Site[] }) {
+export function Topbar({ user }: { user: DashboardUser }) {
+  const { sites, isLoading } = useSites();
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:px-6 lg:px-8">
       <Link
@@ -26,7 +27,7 @@ export function Topbar({ user, sites }: { user: DashboardUser; sites: Site[] }) 
         </span>
       </Link>
 
-      <SiteSwitcher sites={sites} />
+      {isLoading ? <div className="h-9 w-40 animate-pulse rounded-lg bg-muted" /> : <SiteSwitcher sites={sites} />}
 
       <div className="ml-auto flex items-center gap-2">
         <UserMenu user={user} />

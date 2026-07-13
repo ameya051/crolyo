@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { HashIcon, MessageSquareIcon, PlugIcon } from "lucide-react";
 
 import type { Site } from "@/app/(protected)/_lib/types";
 import { listSlackChannels, connectSlackChannel } from "@/app/actions/slack";
 import { StatusBadge } from "@/components/dashboard/status-badge";
+import { useSites } from "@/components/dashboard/sites-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,7 @@ interface SlackChannelOption {
 }
 
 export function TabSlack({ site }: { site: Site }) {
-  const router = useRouter();
+  const { refresh } = useSites();
   const searchParams = useSearchParams();
   const slackStatus = searchParams.get("slack");
 
@@ -72,7 +73,7 @@ export function TabSlack({ site }: { site: Site }) {
       toast.success("Channel connected", {
         description: "Visitor messages will be posted to this channel.",
       });
-      router.refresh();
+      await refresh();
     }
   };
 
@@ -184,6 +185,7 @@ export function TabSlack({ site }: { site: Site }) {
               </p>
               <Button
                 className="h-9 gap-2 px-4"
+                nativeButton={false}
                 render={<a href={`/api/slack/install?site_id=${site.id}`} />}
               >
                 <PlugIcon className="size-4" />

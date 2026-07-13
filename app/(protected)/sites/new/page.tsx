@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeftIcon, CheckIcon, PlugIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { createSite } from "@/app/actions/sites";
+import { useSites } from "@/components/dashboard/sites-provider";
 import { EmbedSnippet } from "@/components/dashboard/embed-snippet";
 import { Reveal } from "@/components/dashboard/reveal";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 export default function NewSitePage() {
+  const { createSite } = useSites();
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [color, setColor] = useState("#f97316");
@@ -30,7 +31,7 @@ export default function NewSitePage() {
     setIsSubmitting(true);
     const result = await createSite({
       name: name.trim(),
-      domain: domain.trim().replace(/^https?:\/\//, ""),
+      domain: domain.trim(),
       primaryColor: color,
     });
     setIsSubmitting(false);
@@ -87,6 +88,7 @@ export default function NewSitePage() {
           <CardContent>
             <Button
               className="h-9 gap-2 px-4"
+              nativeButton={false}
               render={<a href={`/api/slack/install?site_id=${created.id}`} />}
             >
               <PlugIcon className="size-4" />
@@ -149,9 +151,6 @@ export default function NewSitePage() {
                 placeholder="acmestore.com"
                 className="font-mono text-sm"
               />
-              <p className="text-xs text-muted-foreground">
-                Don&apos;t include <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">https://</code>. You can add more domains later.
-              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="color">Widget brand color</Label>

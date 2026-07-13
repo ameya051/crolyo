@@ -74,7 +74,6 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
             </Avatar>
             <div className="space-y-0.5">
               <p className="text-sm font-medium text-foreground">{profile.fullName}</p>
-              <p className="text-xs text-muted-foreground">Signed in with Google</p>
             </div>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

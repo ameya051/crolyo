@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2Icon } from "lucide-react";
 
 import type { Site } from "@/app/(protected)/_lib/types";
+import { useSites } from "@/components/dashboard/sites-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,19 +23,61 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
+function parseAllowedDomains(value: string): string[] {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function formatAllowedDomains(domains: string[]): string {
+  return domains.join("\n");
+}
+
 export function TabSiteSettings({ site }: { site: Site }) {
+  const router = useRouter();
+  const { deleteSite, updateSite } = useSites();
   const [name, setName] = useState(site.name);
   const [domain, setDomain] = useState(site.domain);
-  const [allowedDomains, setAllowedDomains] = useState(site.allowedDomains.join("\n"));
+  const [allowedDomains, setAllowedDomains] = useState(
+    formatAllowedDomains(site.allowedDomains)
+  );
+  const [isSaving, startSave] = useTransition();
+  const [isDeleting, startDelete] = useTransition();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Site settings saved");
+    startSave(async () => {
+      const result = await updateSite({
+        id: site.id,
+        name: name.trim(),
+        domain,
+        allowedDomains: parseAllowedDomains(allowedDomains),
+        primaryColor: site.primaryColor,
+        welcomeMessage: site.welcomeMessage,
+      });
+      if (result.error || !result.site) {
+        toast.error(result.error ?? "Could not save settings.");
+        return;
+      }
+      setName(result.site.name);
+      setDomain(result.site.domain);
+      setAllowedDomains(formatAllowedDomains(result.site.allowedDomains));
+      toast.success("Site settings saved");
+    });
   };
 
   const handleDelete = () => {
-    toast.info("Deleting a site isn't wired up yet in this preview.", {
-      description: "It will permanently remove the site and its conversations.",
+    startDelete(async () => {
+      const result = await deleteSite({ id: site.id });
+      if (result.error) {
+        toast.error(result.error);
+        return;
+      }
+      setDeleteOpen(false);
+      toast.success("Site deleted");
+      router.push("/overview");
     });
   };
 
@@ -47,7 +91,13 @@ export function TabSiteSettings({ site }: { site: Site }) {
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="site-name">Site name</Label>
-              <Input id="site-name" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input
+                id="site-name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={isSaving}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="site-domain">Primary domain</Label>
@@ -57,6 +107,8 @@ export function TabSiteSettings({ site }: { site: Site }) {
                 onChange={(e) => setDomain(e.target.value)}
                 className="font-mono text-sm"
                 placeholder="example.com"
+                disabled={isSaving}
+                required
               />
             </div>
           </div>
@@ -69,13 +121,16 @@ export function TabSiteSettings({ site }: { site: Site }) {
               rows={4}
               className="resize-none font-mono text-sm"
               placeholder={"example.com\nwww.example.com"}
+              disabled={isSaving}
             />
             <p className="text-xs text-muted-foreground">
               One domain per line. The widget only loads on these domains.
             </p>
           </div>
           <div className="flex justify-end">
-            <Button type="submit" className="h-9 px-4">Save changes</Button>
+            <Button type="submit" className="h-9 px-4" disabled={isSaving}>
+              {isSaving ? "Saving…" : "Save changes"}
+            </Button>
           </div>
         </section>
       </form>
@@ -93,7 +148,7 @@ export function TabSiteSettings({ site }: { site: Site }) {
               Permanently remove {site.name}, its widget config, and all conversations.
             </p>
           </div>
-          <Dialog>
+          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
             <DialogTrigger render={<Button variant="destructive" className="h-9 gap-2 px-4" />}>
               <Trash2Icon className="size-4" />
               Delete site
@@ -107,9 +162,13 @@ export function TabSiteSettings({ site }: { site: Site }) {
               </DialogHeader>
               <DialogFooter>
                 <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
-                <DialogClose render={<Button variant="destructive" />} onClick={handleDelete}>
-                  Delete site
-                </DialogClose>
+                <Button
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                >
+                  {isDeleting ? "Deleting…" : "Delete site"}
+                </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

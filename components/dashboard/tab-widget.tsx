@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import type { Site } from "@/app/(protected)/_lib/types";
+import { useSites } from "@/components/dashboard/sites-provider";
 import { WidgetPreview } from "@/components/dashboard/widget-preview";
 import { EmbedSnippet } from "@/components/dashboard/embed-snippet";
 import { Button } from "@/components/ui/button";
@@ -12,13 +13,31 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 export function TabWidget({ site }: { site: Site }) {
+  const { updateSite } = useSites();
   const [color, setColor] = useState(site.primaryColor);
   const [welcome, setWelcome] = useState(site.welcomeMessage);
+  const [isSaving, startSave] = useTransition();
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    toast.success("Widget settings saved", {
-      description: "Visitors will see the updated widget on next load.",
+    startSave(async () => {
+      const result = await updateSite({
+        id: site.id,
+        name: site.name,
+        domain: site.domain,
+        allowedDomains: site.allowedDomains,
+        primaryColor: color,
+        welcomeMessage: welcome,
+      });
+      if (result.error || !result.site) {
+        toast.error(result.error ?? "Could not save widget settings.");
+        return;
+      }
+      setColor(result.site.primaryColor);
+      setWelcome(result.site.welcomeMessage);
+      toast.success("Widget settings saved", {
+        description: "Visitors will see the updated widget on next load.",
+      });
     });
   };
 
@@ -49,12 +68,14 @@ export function TabWidget({ site }: { site: Site }) {
                     type="color"
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
-                    className="size-9 shrink-0 cursor-pointer rounded-lg border border-border bg-background p-1"
+                    disabled={isSaving}
+                    className="size-9 shrink-0 cursor-pointer rounded-lg border border-border bg-background p-1 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label="Pick brand color"
                   />
                   <Input
                     value={color}
                     onChange={(e) => setColor(e.target.value)}
+                    disabled={isSaving}
                     className="font-mono text-sm uppercase"
                   />
                 </div>
@@ -69,6 +90,7 @@ export function TabWidget({ site }: { site: Site }) {
                 rows={3}
                 className="resize-none"
                 placeholder="The first message a visitor sees when they open the chat."
+                disabled={isSaving}
               />
               <p className="text-xs text-muted-foreground">
                 Keep it short and friendly. Visitors see this before they type anything.
@@ -76,7 +98,9 @@ export function TabWidget({ site }: { site: Site }) {
             </div>
           </div>
           <div className="mt-5 flex justify-end">
-            <Button type="submit" className="h-9 px-4">Save changes</Button>
+            <Button type="submit" className="h-9 px-4" disabled={isSaving}>
+              {isSaving ? "Saving…" : "Save changes"}
+            </Button>
           </div>
         </section>
       </form>
