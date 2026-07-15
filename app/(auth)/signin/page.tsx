@@ -11,6 +11,7 @@ import { useState, Suspense } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, type SignInValues } from "@/lib/validations/auth";
+import { clientLogger } from "@/lib/logger.client";
 
 function SignInForm() {
   const searchParams = useSearchParams();
@@ -27,14 +28,17 @@ function SignInForm() {
   });
 
   const handleGoogleSignIn = async () => {
+    clientLogger.info("ui.auth.google_sign_in.clicked");
     setGoogleLoading(true);
     await signInWithGoogle();
   };
 
   const onSubmit = async (data: SignInValues) => {
+    clientLogger.info("ui.auth.email_sign_in.submitted");
     setAuthError(null);
     const result = await signInWithEmail(data);
     if (result && "error" in result) {
+      clientLogger.warn("ui.auth.email_sign_in.failed");
       setAuthError(result.error);
     }
   };

@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { clientLogger } from "@/lib/logger.client";
 
 function parseAllowedDomains(value: string): string[] {
   return value
@@ -48,6 +49,7 @@ export function TabSiteSettings({ site }: { site: Site }) {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    clientLogger.info("ui.sites.update.submitted", { siteId: site.id });
     startSave(async () => {
       const result = await updateSite({
         id: site.id,
@@ -58,24 +60,29 @@ export function TabSiteSettings({ site }: { site: Site }) {
         welcomeMessage: site.welcomeMessage,
       });
       if (result.error || !result.site) {
+        clientLogger.warn("ui.sites.update.failed", { siteId: site.id });
         toast.error(result.error ?? "Could not save settings.");
         return;
       }
       setName(result.site.name);
       setDomain(result.site.domain);
       setAllowedDomains(formatAllowedDomains(result.site.allowedDomains));
+      clientLogger.info("ui.sites.update.succeeded", { siteId: site.id });
       toast.success("Site settings saved");
     });
   };
 
   const handleDelete = () => {
+    clientLogger.info("ui.sites.delete.confirmed", { siteId: site.id });
     startDelete(async () => {
       const result = await deleteSite({ id: site.id });
       if (result.error) {
+        clientLogger.warn("ui.sites.delete.failed", { siteId: site.id });
         toast.error(result.error);
         return;
       }
       setDeleteOpen(false);
+      clientLogger.info("ui.sites.delete.succeeded", { siteId: site.id });
       toast.success("Site deleted");
       router.push("/overview");
     });

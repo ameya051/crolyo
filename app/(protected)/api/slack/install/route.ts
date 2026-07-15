@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
+import { logger } from "@/lib/logger";
 
 const SLACK_SCOPES =
   process.env.SLACK_BOT_SCOPES?.split(",") ?? [
@@ -20,12 +21,15 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const siteId = searchParams.get("site_id");
   const origin = getSiteUrl();
+  logger.info("slack.install.started", { siteId });
 
   if (!siteId) {
+    logger.warn("slack.install.missing_site_id");
     return NextResponse.redirect(`${origin}/overview?error=slack_missing_site`);
   }
 
   if (!process.env.SLACK_CLIENT_ID) {
+    logger.error("slack.install.configuration_missing", undefined, { configuration: "SLACK_CLIENT_ID", siteId });
     return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=error`);
   }
 
@@ -37,6 +41,7 @@ export async function GET(request: Request) {
     .single();
 
   if (!site) {
+    logger.warn("slack.install.site_unavailable", { siteId });
     return NextResponse.redirect(`${origin}/overview?error=slack_unauthorized`);
   }
 
@@ -62,5 +67,6 @@ export async function GET(request: Request) {
   authUrl.searchParams.set("redirect_uri", redirectUri);
   authUrl.searchParams.set("state", state);
 
+  logger.info("slack.install.redirecting_to_provider", { siteId });
   return NextResponse.redirect(authUrl.toString());
 }

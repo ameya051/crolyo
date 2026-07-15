@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { logger } from "@/lib/logger";
 
 const publicRoutes = [
   "/signin",
@@ -24,6 +25,8 @@ function matchPrefix(pathname: string, patterns: string[]): boolean {
 }
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  logger.info("proxy.request.started", { pathname, method: request.method });
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -47,18 +50,17 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
+  const { data: { user }, error } = await supabase.auth.getUser();
+  if (error) logger.error("proxy.auth_lookup.failed", error, { pathname, errorCode: error.code });
 
   if (matchPrefix(pathname, publicRoutes)) {
+    logger.info("proxy.request.public_route", { pathname });
     return supabaseResponse;
   }
 
   if (!user) {
     if (matchPrefix(pathname, protectedApiRoutes)) {
+      logger.warn("proxy.redirect.unauthenticated_api", { pathname });
       const url = request.nextUrl.clone();
       url.pathname = "/signin";
       url.searchParams.set("error", "auth");
@@ -66,6 +68,7 @@ export async function proxy(request: NextRequest) {
     }
 
     if (matchPrefix(pathname, protectedPageRoutes)) {
+      logger.warn("proxy.redirect.unauthenticated_page", { pathname });
       const url = request.nextUrl.clone();
       url.pathname = "/signin";
       return NextResponse.redirect(url);
@@ -73,6 +76,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (user && (pathname === "/signin" || pathname === "/signup")) {
+    logger.info("proxy.redirect.authenticated_user", { pathname });
     const url = request.nextUrl.clone();
     url.pathname = "/overview";
     return NextResponse.redirect(url);

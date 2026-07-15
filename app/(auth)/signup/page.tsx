@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, type SignUpValues } from "@/lib/validations/auth";
+import { clientLogger } from "@/lib/logger.client";
 
 export default function SignUpPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -25,16 +26,20 @@ export default function SignUpPage() {
   });
 
   const handleGoogleSignIn = async () => {
+    clientLogger.info("ui.auth.google_sign_in.clicked");
     setGoogleLoading(true);
     await signInWithGoogle();
   };
 
   const onSubmit = async (data: SignUpValues) => {
+    clientLogger.info("ui.auth.email_sign_up.submitted");
     setAuthError(null);
     const result = await signUpWithEmail(data);
     if (result && "error" in result) {
+      clientLogger.warn("ui.auth.email_sign_up.failed");
       setAuthError(result.error);
     } else {
+      clientLogger.info("ui.auth.email_sign_up.succeeded");
       setSuccess(true);
     }
   };

@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { clientLogger } from "@/lib/logger.client";
 
 export interface AccountProfile {
   fullName: string;
@@ -46,15 +47,18 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    clientLogger.info("ui.account.profile_save.preview");
     toast.success("Profile updated");
   };
 
   const handleSignOut = async () => {
+    clientLogger.info("ui.auth.sign_out.clicked", { source: "account_settings" });
     setSigningOut(true);
     await signOut();
   };
 
   const handleDeleteAccount = () => {
+    clientLogger.info("ui.account.delete.preview");
     toast.info("Account deletion isn't wired up yet in this preview.", {
       description: "It would permanently remove your account and all sites.",
     });
@@ -109,7 +113,10 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
               <Button
                 key={t.value}
                 variant="outline"
-                onClick={() => setTheme(t.value)}
+                onClick={() => {
+                  clientLogger.info("ui.theme.changed", { theme: t.value, source: "account_settings" });
+                  setTheme(t.value);
+                }}
                 className={cn(
                   "h-9 gap-2 px-4",
                   isActive && "border-primary/40 bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary"

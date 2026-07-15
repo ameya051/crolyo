@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { RotateCcwIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { clientLogger } from "@/lib/logger.client";
 
 export default function DashboardError({
   error,
@@ -13,7 +14,7 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    clientLogger.error("ui.dashboard.error_boundary", error, { digest: error.digest });
   }, [error]);
 
   return (

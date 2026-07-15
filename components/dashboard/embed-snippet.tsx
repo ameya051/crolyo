@@ -5,6 +5,7 @@ import { CheckIcon, CopyIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
+import { clientLogger } from "@/lib/logger.client";
 
 export function EmbedSnippet({ siteId }: { siteId: string }) {
   const [copied, setCopied] = useState(false);
@@ -14,10 +15,12 @@ export function EmbedSnippet({ siteId }: { siteId: string }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(snippet);
+      clientLogger.info("ui.embed_snippet.copy.succeeded", { siteId });
       setCopied(true);
       toast.success("Snippet copied to clipboard");
       setTimeout(() => setCopied(false), 2000);
-    } catch {
+    } catch (error) {
+      clientLogger.error("ui.embed_snippet.copy.failed", error, { siteId });
       toast.error("Couldn't copy. Select and copy the snippet manually.");
     }
   };

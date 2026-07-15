@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { HashIcon, MessageSquareIcon, PlugIcon } from "lucide-react";
+import { HashIcon, MessageSquareIcon, PlugIcon, TriangleAlertIcon } from "lucide-react";
 
 import type { Site } from "@/app/(protected)/_lib/types";
 import { listSlackChannels, connectSlackChannel } from "@/app/actions/slack";
@@ -12,6 +12,7 @@ import { useSites } from "@/components/dashboard/sites-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { clientLogger } from "@/lib/logger.client";
 
 interface SlackChannelOption {
   id: string;
@@ -32,6 +33,7 @@ export function TabSlack({ site }: { site: Site }) {
   const [loadingChannels, setLoadingChannels] = useState(false);
   const [selectedChannelId, setSelectedChannelId] = useState("");
   const [isSavingChannel, setIsSavingChannel] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
 
   useEffect(() => {
     if (slackStatus === "installed") {
@@ -46,30 +48,56 @@ export function TabSlack({ site }: { site: Site }) {
   }, [slackStatus]);
 
   const handleLoadChannels = async () => {
+    clientLogger.info("ui.slack.channels.load.started", { siteId: site.id });
     setLoadingChannels(true);
     const result = await listSlackChannels(site.id);
     setLoadingChannels(false);
 
     if (result.error) {
+      clientLogger.warn("ui.slack.channels.load.failed", { siteId: site.id });
       toast.error(result.error);
     } else if (result.channels) {
       setChannels(result.channels);
       setChannelsLoaded(true);
+      clientLogger.info("ui.slack.channels.load.succeeded", { siteId: site.id, channelCount: result.channels.length });
     }
   };
 
-  const handleSaveChannel = async () => {
+    const handleDisconnect = async () => {
+    if (!confirm("Uninstall Crolyo from your Slack workspace? Visitor messages will stop flowing, and you'll need to reinstall the app to reconnect."))
+      return;
+    setIsDisconnecting(true);
+    try {
+      const res = await fetch(`/api/slack/disconnect?site_id=${site.id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.error) {
+        toast.error(data.error);
+        return;
+      }
+      toast.success("Slack workspace disconnected.");
+      await refresh();
+    } catch {
+      toast.error("Could not disconnect Slack. Please try again.");
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+const handleSaveChannel = async () => {
     if (!selectedChannelId) return;
     const channel = channels.find((c) => c.id === selectedChannelId);
     if (!channel) return;
 
+    clientLogger.info("ui.slack.channel.connect.started", { siteId: site.id, channelId: channel.id });
     setIsSavingChannel(true);
     const result = await connectSlackChannel(site.id, channel.id, channel.name);
     setIsSavingChannel(false);
 
     if (result.error) {
+      clientLogger.warn("ui.slack.channel.connect.failed", { siteId: site.id, channelId: channel.id });
       toast.error(result.error);
     } else {
+      clientLogger.info("ui.slack.channel.connect.succeeded", { siteId: site.id, channelId: channel.id });
       toast.success("Channel connected", {
         description: "Visitor messages will be posted to this channel.",
       });
@@ -119,13 +147,19 @@ export function TabSlack({ site }: { site: Site }) {
             </dl>
             <div className="mt-5">
               <Button
-                variant="ghost"
-                className="h-9 px-4 text-muted-foreground"
-                onClick={() =>
-                  toast.info("Disconnecting Slack isn't wired up yet in this preview.")
-                }
+                variant="destructive"
+                className="h-9 gap-2 px-4"
+                disabled={isDisconnecting}
+                onClick={handleDisconnect}
               >
-                Disconnect
+                {isDisconnecting ? (
+                  "Uninstalling…"
+                ) : (
+                  <>
+                    <TriangleAlertIcon className="size-4" />
+                    Uninstall app
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

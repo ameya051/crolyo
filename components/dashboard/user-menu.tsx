@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import { signOut } from "@/app/actions/auth";
+import { clientLogger } from "@/lib/logger.client";
 
 export interface DashboardUser {
   avatarUrl: string | null;
@@ -37,6 +38,7 @@ export function UserMenu({ user }: { user: DashboardUser }) {
   const { theme, setTheme } = useTheme();
 
   const handleSignOut = async () => {
+    clientLogger.info("ui.auth.sign_out.clicked", { source: "user_menu" });
     setLoading(true);
     await signOut();
   };
@@ -78,7 +80,10 @@ export function UserMenu({ user }: { user: DashboardUser }) {
             return (
               <DropdownMenuItem
                 key={item.value}
-                onClick={() => setTheme(item.value)}
+                onClick={() => {
+                  clientLogger.info("ui.theme.changed", { theme: item.value, source: "user_menu" });
+                  setTheme(item.value);
+                }}
               >
                 <Icon className="size-4" />
                 <span>{item.label}</span>

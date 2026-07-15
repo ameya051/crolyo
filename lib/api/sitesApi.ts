@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { clientLogger } from "@/lib/logger.client";
 import type { Site } from "@/app/(protected)/_lib/types";
 import {
   createSiteSchema,
@@ -57,6 +58,7 @@ function mapSiteRow(row: SitePublicRow): Site {
 }
 
 export async function listSites(): Promise<SitesResponse> {
+  clientLogger.info("sites.list.started");
   const supabase = createClient();
   const { data, error } = await supabase
     .from("sites")
@@ -64,14 +66,16 @@ export async function listSites(): Promise<SitesResponse> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error(error);
+    clientLogger.error("sites.list.failed", error, { errorCode: error.code });
     return { sites: [], error: "Could not load your sites. Please try again." };
   }
 
+  clientLogger.info("sites.list.succeeded", { siteCount: data.length });
   return { sites: (data as SitePublicRow[]).map(mapSiteRow) };
 }
 
 export async function getSiteById(id: string): Promise<SiteResponse> {
+  clientLogger.info("sites.get.started", { siteId: id });
   const supabase = createClient();
   const { data, error } = await supabase
     .from("sites")
@@ -80,17 +84,20 @@ export async function getSiteById(id: string): Promise<SiteResponse> {
     .maybeSingle();
 
   if (error) {
-    console.error(error);
+    clientLogger.error("sites.get.failed", error, { siteId: id, errorCode: error.code });
     return { site: null, error: "Could not load this site. Please try again." };
   }
 
+  clientLogger.info("sites.get.succeeded", { siteId: id, found: Boolean(data) });
   return { site: data ? mapSiteRow(data as SitePublicRow) : null };
 }
 
 export async function createSite(req: CreateSiteRequest): Promise<SiteMutationResponse> {
+  clientLogger.info("sites.create.started");
   const normalized = { ...req, domain: normalizeDomain(req.domain) };
   const validated = createSiteSchema.safeParse(normalized);
   if (!validated.success) {
+    clientLogger.warn("sites.create.validation_failed");
     return { error: validated.error.issues[0]?.message ?? "Please check the site details and try again." };
   }
 
@@ -101,7 +108,7 @@ export async function createSite(req: CreateSiteRequest): Promise<SiteMutationRe
     .maybeSingle();
 
   if (userError || !userRecord) {
-    console.error(userError);
+    clientLogger.error("sites.create.user_lookup_failed", userError, { errorCode: userError?.code });
     return { error: "Could not identify your account. Please sign in again." };
   }
 
@@ -117,14 +124,16 @@ export async function createSite(req: CreateSiteRequest): Promise<SiteMutationRe
     .single();
 
   if (error || !data) {
-    console.error(error);
+    clientLogger.error("sites.create.failed", error, { errorCode: error?.code });
     return { error: "Could not create the site. Please try again." };
   }
 
+  clientLogger.info("sites.create.succeeded", { siteId: data.id });
   return { site: mapSiteRow(data as SitePublicRow) };
 }
 
 export async function updateSite(req: UpdateSiteRequest): Promise<SiteMutationResponse> {
+  clientLogger.info("sites.update.started", { siteId: req.id });
   const normalized = {
     ...req,
     domain: normalizeDomain(req.domain),
@@ -132,6 +141,7 @@ export async function updateSite(req: UpdateSiteRequest): Promise<SiteMutationRe
   };
   const validated = updateSiteSchema.safeParse(normalized);
   if (!validated.success) {
+    clientLogger.warn("sites.update.validation_failed", { siteId: req.id });
     return { error: validated.error.issues[0]?.message ?? "Please check the site details and try again." };
   }
 
@@ -150,24 +160,30 @@ export async function updateSite(req: UpdateSiteRequest): Promise<SiteMutationRe
     .single();
 
   if (error || !data) {
-    console.error(error);
+    clientLogger.error("sites.update.failed", error, { siteId: id, errorCode: error?.code });
     return { error: "Could not update the site. Please try again." };
   }
 
+  clientLogger.info("sites.update.succeeded", { siteId: data.id });
   return { site: mapSiteRow(data as SitePublicRow) };
 }
 
 export async function deleteSite(req: DeleteSiteRequest): Promise<DeleteSiteResponse> {
+  clientLogger.info("sites.delete.started", { siteId: req.id });
   const validated = deleteSiteSchema.safeParse(req);
-  if (!validated.success) return { error: validated.error.issues[0]?.message ?? "Invalid site id." };
+  if (!validated.success) {
+    clientLogger.warn("sites.delete.validation_failed", { siteId: req.id });
+    return { error: validated.error.issues[0]?.message ?? "Invalid site id." };
+  }
 
   const supabase = createClient();
   const { error } = await supabase.from("sites").delete().eq("id", validated.data.id);
 
   if (error) {
-    console.error(error);
+    clientLogger.error("sites.delete.failed", error, { siteId: validated.data.id, errorCode: error.code });
     return { error: "Could not delete the site. Please try again." };
   }
 
+  clientLogger.info("sites.delete.succeeded", { siteId: validated.data.id });
   return { ok: true };
 }
