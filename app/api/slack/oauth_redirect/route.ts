@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { exchangeSlackCode } from "@/lib/slack/api";
+import { exchangeSlackCode } from "@/lib/api/slackApi";
 import { encrypt } from "@/lib/encryption";
 import { requireUser } from "@/lib/auth/route-guard";
 import { logger } from "@/lib/logger";

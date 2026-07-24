@@ -3,7 +3,7 @@ import type {
   Conversation,
   OverviewStats,
   Site,
-} from "./types"
+} from "@/lib/types"
 
 export const mockSites: Site[] = [
   /* {

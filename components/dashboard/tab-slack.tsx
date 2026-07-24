@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { HashIcon, MessageSquareIcon, PlugIcon, TriangleAlertIcon } from "lucide-react";
 
-import type { Site } from "@/app/(protected)/_lib/types";
+import type { Site } from "@/lib/types";
 import { listSlackChannels, connectSlackChannel } from "@/app/actions/slack";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { useSites } from "@/components/dashboard/sites-provider";

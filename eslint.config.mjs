@@ -11,6 +11,8 @@ const eslintConfig = defineConfig([
     ".next/**",
     "out/**",
     "build/**",
+    "public/widget.js",
+    "public/widget-chat.js",
     "next-env.d.ts",
   ]),
 ]);

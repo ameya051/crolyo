@@ -1,42 +1,25 @@
 import { createClient } from "@/lib/supabase/client";
 import { clientLogger } from "@/lib/logger.client";
-import type { Site } from "@/app/(protected)/_lib/types";
+import type {
+  CreateSiteRequest,
+  DeleteSiteRequest,
+  DeleteSiteResponse,
+  Site,
+  SiteMutationResponse,
+  SitePublicRow,
+  SiteResponse,
+  SitesResponse,
+  UpdateSiteRequest,
+} from "@/lib/types";
 import {
   createSiteSchema,
   deleteSiteSchema,
   normalizeDomain,
   updateSiteSchema,
-  type CreateSiteValues,
-  type DeleteSiteValues,
-  type UpdateSiteValues,
 } from "@/lib/validations/site";
-
-type SitePublicRow = {
-  id: string;
-  user_id: string;
-  name: string;
-  slack_workspace_id: string | null;
-  slack_channel_id: string | null;
-  slack_workspace_name: string | null;
-  slack_channel_name: string | null;
-  primary_color: string;
-  welcome_message: string;
-  allowed_domains: string[];
-  created_at: string;
-  updated_at: string;
-};
 
 const SITE_PUBLIC_SELECT =
   "id, user_id, name, primary_color, welcome_message, allowed_domains, created_at, updated_at, slack_workspace_id, slack_channel_id, slack_workspace_name, slack_channel_name" as const;
-
-export type CreateSiteRequest = CreateSiteValues;
-export type UpdateSiteRequest = UpdateSiteValues;
-export type DeleteSiteRequest = DeleteSiteValues;
-
-export type SitesResponse = { sites: Site[]; error?: never } | { sites: []; error: string };
-export type SiteResponse = { site: Site | null; error?: never } | { site: null; error: string };
-export type SiteMutationResponse = { site: Site; error?: never } | { site?: never; error: string };
-export type DeleteSiteResponse = { ok: true; error?: never } | { ok?: never; error: string };
 
 function mapSiteRow(row: SitePublicRow): Site {
   const allowedDomains = row.allowed_domains ?? [];

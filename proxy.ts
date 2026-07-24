@@ -53,6 +53,15 @@ export async function proxy(request: NextRequest) {
   const { data: { user }, error } = await supabase.auth.getUser();
   if (error) logger.error("proxy.auth_lookup.failed", error, { pathname, errorCode: error.code });
 
+  // Must run before the public-route early return — /signin and /signup are public,
+  // so an authenticated user would otherwise never get redirected to the app.
+  if (user && (pathname === "/signin" || pathname === "/signup")) {
+    logger.info("proxy.redirect.authenticated_user", { pathname });
+    const url = request.nextUrl.clone();
+    url.pathname = "/overview";
+    return NextResponse.redirect(url);
+  }
+
   if (matchPrefix(pathname, publicRoutes)) {
     logger.info("proxy.request.public_route", { pathname });
     return supabaseResponse;
@@ -73,13 +82,6 @@ export async function proxy(request: NextRequest) {
       url.pathname = "/signin";
       return NextResponse.redirect(url);
     }
-  }
-
-  if (user && (pathname === "/signin" || pathname === "/signup")) {
-    logger.info("proxy.redirect.authenticated_user", { pathname });
-    const url = request.nextUrl.clone();
-    url.pathname = "/overview";
-    return NextResponse.redirect(url);
   }
 
   return supabaseResponse;

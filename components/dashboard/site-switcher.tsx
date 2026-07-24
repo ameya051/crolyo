@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import type { Site } from "@/app/(protected)/_lib/types";
+import type { Site } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export function SiteSwitcher({ sites }: { sites: Site[] }) {

@@ -1,6 +1,6 @@
 import { ClockIcon, MessageCircleIcon, MessageSquareIcon, UsersIcon } from "lucide-react";
 
-import type { Conversation, OverviewStats, Site } from "@/app/(protected)/_lib/types";
+import type { Conversation, OverviewStats, Site } from "@/lib/types";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { ConversationRow } from "@/components/dashboard/conversation-row";
 import { EmptyState } from "@/components/dashboard/empty-state";

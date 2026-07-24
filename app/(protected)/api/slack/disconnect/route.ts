@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
-import { uninstallSlackApp } from "@/lib/slack/api";
+import { uninstallSlackApp } from "@/lib/api/slackApi";
 import { requireUser } from "@/lib/auth/route-guard";
 import { logger } from "@/lib/logger";
 

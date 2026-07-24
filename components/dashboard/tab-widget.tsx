@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
-import type { Site } from "@/app/(protected)/_lib/types";
+import type { Site } from "@/lib/types";
 import { useSites } from "@/components/dashboard/sites-provider";
 import { WidgetPreview } from "@/components/dashboard/widget-preview";
 import { EmbedSnippet } from "@/components/dashboard/embed-snippet";

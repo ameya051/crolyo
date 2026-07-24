@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
-import { listSlackChannels as fetchSlackChannels } from "@/lib/slack/api";
+import { listSlackChannels as fetchSlackChannels } from "@/lib/api/slackApi";
 import { logger } from "@/lib/logger";
 
 interface SlackChannelOption {

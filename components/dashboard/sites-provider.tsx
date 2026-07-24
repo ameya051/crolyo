@@ -2,15 +2,17 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
-import type { Site } from "@/app/(protected)/_lib/types";
+import type {
+  CreateSiteRequest,
+  DeleteSiteRequest,
+  Site,
+  UpdateSiteRequest,
+} from "@/lib/types";
 import {
   createSite as createSiteRequest,
   deleteSite as deleteSiteRequest,
   listSites,
   updateSite as updateSiteRequest,
-  type CreateSiteRequest,
-  type DeleteSiteRequest,
-  type UpdateSiteRequest,
 } from "@/lib/api/sitesApi";
 
 type SitesContextValue = {

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ExternalLinkIcon, MessageSquareIcon } from "lucide-react";
 
-import type { Conversation } from "@/app/(protected)/_lib/types";
+import type { Conversation } from "@/lib/types";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 
 function formatRelative(iso: string) {

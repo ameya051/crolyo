@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Trash2Icon } from "lucide-react";
 
-import type { Site } from "@/app/(protected)/_lib/types";
+import type { Site } from "@/lib/types";
 import { useSites } from "@/components/dashboard/sites-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
