@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
-import { listSlackChannels as fetchSlackChannels } from "@/lib/api/slackApi";
+import { listSlackChannels as fetchSlackChannels, joinConversation } from "@/lib/api/slackApi";
 import { logger } from "@/lib/logger";
 
 interface SlackChannelOption {
@@ -62,6 +62,41 @@ export async function connectSlackChannel(
   if (!user) {
     logger.warn("slack.channel.connect.unauthorized", { siteId });
     return { error: "Unauthorized" };
+  }
+
+  const { data: site, error: siteError } = await supabase
+    .from("sites")
+    .select("slack_bot_token")
+    .eq("id", siteId)
+    .single();
+
+  if (siteError || !site || !site.slack_bot_token) {
+    logger.warn("slack.channel.connect.workspace_unavailable", { siteId, errorCode: siteError?.code });
+    return { error: "Slack workspace not connected. Reconnect Slack and try again." };
+  }
+
+  let botToken: string;
+  try {
+    botToken = decrypt(site.slack_bot_token as string);
+  } catch (err) {
+    logger.error("slack.channel.connect.decrypt_failed", err, { siteId });
+    return { error: "Could not read the Slack workspace token. Reconnect Slack and try again." };
+  }
+
+  let join: Awaited<ReturnType<typeof joinConversation>>;
+  try {
+    join = await joinConversation(botToken, channelId);
+  } catch (err) {
+    logger.error("slack.channel.connect.join_failed", err, { siteId, channelId });
+    return { error: `Couldn't join #${channelName} in Slack. Try again, or invite the bot to the channel manually.` };
+  }
+
+  if (!join.ok && join.error !== "already_in_channel") {
+    logger.warn("slack.channel.connect.join_rejected", { siteId, channelId, errorCode: join.error });
+    if (join.error === "method_not_allowed_for_channel_type") {
+      return { error: `Couldn't join #${channelName}. Invite the Crolyo bot to that channel, then retry.` };
+    }
+    return { error: `Couldn't join #${channelName} in Slack (${join.error}). Invite the bot to the channel, then retry.` };
   }
 
   const { error } = await supabase

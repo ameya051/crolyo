@@ -129,6 +129,35 @@ export async function uninstallSlackApp(
   }
 }
 
+export async function joinConversation(
+  botToken: string,
+  channelId: string
+): Promise<{ ok: boolean; error?: string }> {
+  const startedAt = Date.now();
+  logger.info("slack.conversation.join.started", { channelId });
+  try {
+    const response = await fetch(`${SLACK_API_BASE}/conversations.join`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${botToken}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({ channel: channelId }),
+    });
+    const data = (await response.json()) as { ok: boolean; error?: string };
+    logger.info("slack.conversation.join.completed", {
+      ok: data.ok,
+      errorCode: data.error,
+      durationMs: Date.now() - startedAt,
+    });
+    if (!data.ok) return { ok: false, error: data.error };
+    return { ok: true };
+  } catch (error) {
+    logger.error("slack.conversation.join.failed", error, { channelId, durationMs: Date.now() - startedAt });
+    throw error;
+  }
+}
+
 export async function listSlackChannels(botToken: string): Promise<SlackChannel[]> {
   const url = new URL(`${SLACK_API_BASE}/conversations.list`);
   url.searchParams.set("types", "public_channel,private_channel");
