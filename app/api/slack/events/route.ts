@@ -75,6 +75,7 @@ export async function POST(request: Request) {
     !event.text ||
     !event.ts
   ) {
+    logger.error("slack.events.invalid_event", null, { eventType: event?.type, subtype: event?.subtype, botId: event?.bot_id });
     return Response.json({ ok: true });
   }
 

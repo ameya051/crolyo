@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
     incomingRequests: {
       ignore: [/\/api\/auth\/callback/, /\/api\/slack\/oauth_redirect/],
     },
-    browserToTerminal: true,
   },
 };
 

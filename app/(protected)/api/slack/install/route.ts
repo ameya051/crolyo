@@ -11,6 +11,8 @@ const SLACK_SCOPES =
     "groups:read",
     "channels:history",
     "groups:history",
+    "channels:write",
+    "groups:write",
   ];
 
 function getSiteUrl(): string {
