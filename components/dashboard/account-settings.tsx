@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Monitor, Moon, Sun, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 
@@ -127,6 +128,22 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
               </Button>
             );
           })}
+        </div>
+      </section>
+
+      <Separator />
+
+      <section className="space-y-4">
+        <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+          Billing
+        </h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-muted-foreground">
+            View your plan, trial, and payment details.
+          </p>
+          <Button variant="outline" className="h-9 px-4" nativeButton={false} render={<Link href="/settings/billing" />}>
+            Manage billing
+          </Button>
         </div>
       </section>
 

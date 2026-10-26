@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getAccessState } from "@/lib/billing/access";
+import { getBillingMode } from "@/lib/billing/dodo";
+import { getCurrentBillingAccount } from "@/lib/billing/server";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 export default async function ProtectedLayout({
@@ -25,5 +28,15 @@ export default async function ProtectedLayout({
   const email = user.email ?? "";
 
   const profile = { avatarUrl, fullName, email } as const;
-  return <DashboardShell user={profile}>{children}</DashboardShell>;
+
+  // Computed on the server so "days left" never mismatches during hydration.
+  // A failed lookup hides the banner rather than claiming the widget is offline.
+  const account = await getCurrentBillingAccount();
+  const billing = account ? getAccessState(account, getBillingMode()) : null;
+
+  return (
+    <DashboardShell user={profile} billing={billing}>
+      {children}
+    </DashboardShell>
+  );
 }

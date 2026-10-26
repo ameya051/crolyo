@@ -1,8 +1,11 @@
 import { createHmac, timingSafeEqual } from "crypto";
 
+import { BILLING_ACCESS_SELECT, firstOrNull, getAccessState } from "@/lib/billing/access";
+import { getBillingMode } from "@/lib/billing/dodo";
 import { logger } from "@/lib/logger";
 import { broadcastConversationMessage } from "@/lib/realtime";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { OwnerBillingEmbed } from "@/lib/types";
 import { toWidgetMessage } from "@/lib/widget";
 
 export const runtime = "nodejs";
@@ -83,12 +86,18 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
     const { data: site, error: siteError } = await admin
       .from("sites")
-      .select("id")
+      .select(`id, owner:users!inner(${BILLING_ACCESS_SELECT})`)
       .eq("slack_workspace_id", payload.team_id)
       .eq("slack_channel_id", event.channel)
       .maybeSingle();
     if (siteError) throw siteError;
     if (!site) return Response.json({ ok: true });
+
+    const owner = firstOrNull(site.owner as unknown as OwnerBillingEmbed);
+    if (!getAccessState(owner, getBillingMode()).hasAccess) {
+      logger.info("slack.events.owner_inactive", { siteId: site.id });
+      return Response.json({ ok: true });
+    }
 
     const { data: conversation, error: conversationError } = await admin
       .from("conversations")

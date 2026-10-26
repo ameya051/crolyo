@@ -18,6 +18,7 @@ const protectedPageRoutes = [
 
 const protectedApiRoutes = [
   "/api/slack/install",
+  "/api/billing",
 ];
 
 function matchPrefix(pathname: string, patterns: string[]): boolean {
@@ -89,6 +90,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Webhooks are signature-verified by their handlers and never carry a session.
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/webhooks/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

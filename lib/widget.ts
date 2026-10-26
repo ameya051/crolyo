@@ -1,7 +1,11 @@
 import { createHash, randomBytes } from "crypto";
 
+import { BILLING_ACCESS_SELECT, firstOrNull, getAccessState } from "@/lib/billing/access";
+import { getBillingMode } from "@/lib/billing/dodo";
+import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
+  OwnerBillingEmbed,
   WidgetConversation,
   WidgetMessage,
   WidgetSite,
@@ -122,17 +126,28 @@ export async function requireWidgetSite(request: Request, siteId: string): Promi
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("sites")
-    .select("id, name, primary_color, welcome_message, allowed_domains, slack_bot_token, slack_channel_id")
+    .select(
+      `id, name, primary_color, welcome_message, allowed_domains, slack_bot_token, slack_channel_id, owner:users!inner(${BILLING_ACCESS_SELECT})`
+    )
     .eq("id", siteId)
     .maybeSingle();
 
-  if (error || !data) {
+  if (error) {
+    logger.error("widget.site.lookup_failed", error, { siteId, errorCode: error.code });
+    throw new WidgetRequestError(500, "Unable to load the chat right now.");
+  }
+  if (!data) {
     throw new WidgetRequestError(404, "Site not found.");
   }
 
-  const site = data as WidgetSite;
+  const { owner, ...site } = data as unknown as WidgetSite & { owner: OwnerBillingEmbed };
   if (!isAllowedOrigin(origin, site.allowed_domains ?? [])) {
     throw new WidgetRequestError(403, "This domain is not allowed for the widget.");
+  }
+
+  // Shown to site visitors, so it must not mention billing.
+  if (!getAccessState(firstOrNull(owner), getBillingMode()).hasAccess) {
+    throw new WidgetRequestError(403, "Chat is currently unavailable.");
   }
 
   return { site, origin: origin! };

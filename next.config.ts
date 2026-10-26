@@ -6,7 +6,8 @@ const nextConfig: NextConfig = {
     fetches: { fullUrl: true },
     serverFunctions: false,
     incomingRequests: {
-      ignore: [/\/api\/auth\/callback/, /\/api\/slack\/oauth_redirect/],
+      // Dodo appends the customer's email to the checkout return URL.
+      ignore: [/\/api\/auth\/callback/, /\/api\/slack\/oauth_redirect/, /\/api\/billing\/return/],
     },
   },
 };

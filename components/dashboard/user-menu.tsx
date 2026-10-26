@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOutIcon, MonitorIcon, MoonIcon, SunIcon, UserIcon } from "lucide-react";
+import { CreditCardIcon, LogOutIcon, MonitorIcon, MoonIcon, SunIcon, UserIcon } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -70,6 +70,10 @@ export function UserMenu({ user }: { user: DashboardUser }) {
         <DropdownMenuItem render={<Link href="/settings" />}>
           <UserIcon className="size-4" />
           <span>Account settings</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem render={<Link href="/settings/billing" />}>
+          <CreditCardIcon className="size-4" />
+          <span>Billing</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuGroup className="py-0.5">
