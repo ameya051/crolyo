@@ -58,7 +58,7 @@ export function SiteHeader() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-[200px]">
               <DropdownMenuItem>
-                <Link href="/docs" className="cursor-pointer w-full">Docs</Link>
+                <Link href="/pricing" className="cursor-pointer w-full">Pricing</Link>
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href="/signin" className="cursor-pointer w-full">Login</Link>
@@ -73,8 +73,8 @@ export function SiteHeader() {
 
         {/* Desktop buttons */}
         <div className="hidden sm:flex flex-1 justify-end items-center gap-3">
-          <Link href="/docs" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
-            Docs
+          <Link href="/pricing" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            Pricing
           </Link>
           <Link href="/signin" className={buttonVariants({ variant: "ghost", className: "text-sm font-medium h-9 px-4" })}>
             Login

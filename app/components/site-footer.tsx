@@ -21,9 +21,10 @@ export function SiteFooter() {
           <div className="flex items-center gap-4 sm:gap-6">
             <nav className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm font-medium text-muted-foreground">
               <Link href="/llms.txt" className="hover:text-foreground transition-colors">llms.txt</Link>
+              <Link href="/pricing" className="hover:text-foreground transition-colors">Pricing</Link>
               <Link href="/terms" className="hover:text-foreground transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-foreground transition-colors">Privacy</Link>
-              <Link href="/trust" className="hover:text-foreground transition-colors">Trust Centre</Link>
+              <Link href="/refund" className="hover:text-foreground transition-colors">Refunds</Link>
             </nav>
             <div className="w-px h-4 bg-border hidden sm:block" />
             <ModeToggle />

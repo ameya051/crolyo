@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { LegalSection } from "@/app/(marketing)/_legal/LegalPageLayout";
 
-const EFFECTIVE_DATE = "Last updated: June 23, 2026";
-const CONTACT_EMAIL = "support@crolyo.com"; // TODO: replace with the real contact email
+const EFFECTIVE_DATE = "Last updated: November 1, 2026";
+import { CONTACT_EMAIL } from "@/app/(marketing)/_legal/contact";
 
 const Para = ({ children }: { children: ReactNode }) => <p>{children}</p>;
 
@@ -150,22 +150,39 @@ export const termsSections: LegalSection[] = [
     content: (
       <>
         <Para>
-          It&apos;s free during the MVP &mdash; we&apos;ll let you know well
-          in advance before anything changes.
+          Start with a 14-day free trial, then pick a monthly or annual plan.
+          Cancel any time.
         </Para>
         <Para>
-          During the minimum-viable-product period, Crolyo is provided free
-          of charge. We may, at some point in the future, introduce paid
-          plans, usage-based pricing, or other commercial terms. We will give
-          you reasonable advance notice of any change to pricing, and any new
-          fees will not apply to you until you affirmatively opt in (for
-          example, by upgrading to a paid plan or by continuing to use a
-          feature that has become paid after the notice period).
+          <strong>Free trial.</strong> New accounts get a 14-day free trial
+          with full access to the Service. No payment details are required to
+          start the trial, and you will not be charged unless you subscribe.
         </Para>
         <Para>
-          Unless required by law, fees are non-refundable. We may update
-          pricing for paid plans on reasonable notice, and you may cancel
-          before the change takes effect.
+          <strong>Subscriptions.</strong> After the trial, continued use of
+          the Service requires a paid subscription, billed monthly or
+          annually in advance at the prices shown on our{" "}
+          <a href="/pricing">pricing page</a>. Subscriptions renew
+          automatically at the end of each billing period until cancelled.
+        </Para>
+        <Para>
+          <strong>Payments.</strong> Payments are processed by Dodo Payments,
+          which acts as our Merchant of Record and reseller. Dodo Payments
+          handles payment processing, invoicing, and applicable sales tax or
+          VAT, and its own terms apply to the transaction. We never see or
+          store your full card details.
+        </Para>
+        <Para>
+          <strong>Cancellation and refunds.</strong> You can cancel at any
+          time from your billing settings. Cancellation takes effect at the
+          end of the current billing period, and you keep access until then.
+          Except where required by law, payments are non-refundable; see our{" "}
+          <a href="/refund">Refund &amp; Cancellation Policy</a> for details.
+        </Para>
+        <Para>
+          <strong>Price changes.</strong> We may change our prices on
+          reasonable advance notice. Changes apply from your next billing
+          period, and you may cancel before they take effect.
         </Para>
       </>
     ),
@@ -276,8 +293,8 @@ export const termsSections: LegalSection[] = [
       <>
         <Para>
           If something goes wrong, our liability is limited to what
-          you&apos;ve paid us in the prior 12 months &mdash; and during the
-          MVP, that&apos;s zero.
+          you&apos;ve paid us in the prior 12 months (or US$100, if
+          that&apos;s more).
         </Para>
         <Para>
           To the maximum extent permitted by law, in no event will Crolyo, its
@@ -294,8 +311,6 @@ export const termsSections: LegalSection[] = [
           to the Service will not exceed the greater of (a) the amounts you
           paid us for the Service in the 12 months preceding the event
           giving rise to the claim, or (b) one hundred US dollars (US$100).
-          Because the Service is free during the MVP, our aggregate liability
-          is capped at US$100.
         </Para>
       </>
     ),

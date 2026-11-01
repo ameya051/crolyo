@@ -1,7 +1,7 @@
 import type { LegalSection } from "@/app/(marketing)/_legal/LegalPageLayout";
 
-const EFFECTIVE_DATE = "Last updated: June 23, 2026";
-const CONTACT_EMAIL = "support@crolyo.com"; // TODO: replace with the real contact email
+const EFFECTIVE_DATE = "Last updated: November 1, 2026";
+import { CONTACT_EMAIL } from "@/app/(marketing)/_legal/contact";
 
 export const privacySections: LegalSection[] = [
   {
@@ -194,6 +194,13 @@ export const privacySections: LegalSection[] = [
             channel and receipt of agent replies via the Slack Events API and
             Web API. Slack processes conversation content as a sub-processor
             and on its own terms.
+          </li>
+          <li>
+            <strong>Dodo Payments</strong> &mdash; subscription billing as our
+            Merchant of Record. Dodo Payments collects and processes your
+            payment details, billing address, and tax information directly;
+            Crolyo never sees or stores your card details, only the customer
+            and subscription identifiers needed to manage your plan.
           </li>
         </ul>
         <p>
