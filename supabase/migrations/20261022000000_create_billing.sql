@@ -3,6 +3,8 @@
 -- grants access when the app runs against live mode.
 
 create type public.billing_mode as enum ('test', 'live');
+create type public.billing_interval as enum ('monthly', 'annual');
+create type public.billing_checkout_status as enum ('pending', 'open', 'completed', 'expired', 'failed');
 
 -- The trial and the Dodo customer are 1:1 with a user, so they live on public.users.
 -- The column default starts the trial for new users and backfills existing ones.
@@ -51,6 +53,38 @@ create policy "billing_subscriptions_select_own" on public.billing_subscriptions
 revoke all on public.billing_subscriptions from anon, authenticated;
 grant select on public.billing_subscriptions to authenticated;
 grant select, insert, update, delete on public.billing_subscriptions to service_role;
+
+-- Dodo checkout sessions we created. Dodo has no idempotency key or cancel API for
+-- checkouts, so this table is what stops a user paying through two checkouts.
+-- 'pending' reserves the slot before Dodo is called; the webhook marks 'completed'.
+create table public.billing_checkout_sessions (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.users(id) on delete cascade,
+  mode public.billing_mode not null,
+  interval public.billing_interval not null,
+  status public.billing_checkout_status not null default 'pending',
+  -- Null until Dodo returns the session.
+  dodo_session_id text unique,
+  checkout_url text,
+  -- Kept under Dodo's 24h session lifetime so we never hand out a dead URL.
+  expires_at timestamptz not null,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- One live checkout per user, whatever the interval.
+create unique index billing_checkout_sessions_one_live_per_user_idx
+  on public.billing_checkout_sessions(user_id) where status in ('pending', 'open');
+
+alter table public.billing_checkout_sessions enable row level security;
+
+create policy "billing_checkout_sessions_select_own" on public.billing_checkout_sessions
+  for select to authenticated
+  using (user_id in (select id from public.users where auth_user_id = (select auth.uid())));
+
+revoke all on public.billing_checkout_sessions from anon, authenticated;
+grant select on public.billing_checkout_sessions to authenticated;
+grant select, insert, update, delete on public.billing_checkout_sessions to service_role;
 
 -- Ordered upsert of a Dodo subscription snapshot. Returns false when the stored
 -- row already reflects a newer event (or belongs to another user/mode).

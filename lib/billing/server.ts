@@ -7,7 +7,7 @@ import { logger } from "@/lib/logger";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { BillingAccountRow, BillingMode } from "@/lib/types";
-import { dodoSubscriptionSchema, type DodoSubscriptionSnapshot } from "@/lib/validations/billing";
+import type { DodoSubscriptionSnapshot } from "@/lib/validations/billing";
 
 type AdminClient = ReturnType<typeof createAdminClient>;
 
@@ -157,28 +157,27 @@ export async function applySubscriptionSnapshot(
   return data === true;
 }
 
-/** Pulls the customer's subscriptions from Dodo so the UI is right even if webhooks lag. */
-export async function syncCustomerSubscriptions(
-  userId: string,
-  customerId: string,
-  mode: BillingMode
-): Promise<number> {
-  const admin = createAdminClient();
-  const eventAt = new Date().toISOString();
-  let applied = 0;
+/**
+ * Closes the checkout that created a subscription, freeing the user's checkout slot.
+ * `expired` is included because a payment can land after our local TTL. Idempotent.
+ */
+export async function completeCheckoutSession(
+  admin: AdminClient,
+  snapshot: DodoSubscriptionSnapshot,
+  userId: string
+): Promise<boolean> {
+  const checkoutSessionId = snapshot.metadata?.checkout_session_id;
+  if (typeof checkoutSessionId !== "string" || !UUID_PATTERN.test(checkoutSessionId)) return false;
 
-  for await (const subscription of getDodoClient().subscriptions.list({ customer_id: customerId })) {
-    const parsed = dodoSubscriptionSchema.safeParse(subscription);
-    if (!parsed.success) {
-      logger.warn("billing.sync.subscription_invalid");
-      continue;
-    }
-    if (await applySubscriptionSnapshot(admin, { userId, mode, snapshot: parsed.data, eventType: "sync", eventAt })) {
-      applied += 1;
-    }
-  }
-
-  return applied;
+  const { data, error } = await admin
+    .from("billing_checkout_sessions")
+    .update({ status: "completed", updated_at: new Date().toISOString() })
+    .eq("id", checkoutSessionId)
+    .eq("user_id", userId)
+    .in("status", ["pending", "open", "expired"])
+    .select("id");
+  if (error) throw error;
+  return data.length > 0;
 }
 
 /** Two live subscriptions means a double charge; surface it for a manual refund. */

@@ -2,6 +2,7 @@ import { subscriptionGrantsAccess } from "@/lib/billing/access";
 import { getBillingMode, getDodoClient } from "@/lib/billing/dodo";
 import {
   applySubscriptionSnapshot,
+  completeCheckoutSession,
   detectDuplicateSubscriptions,
   resolveSubscriptionOwner,
 } from "@/lib/billing/server";
@@ -75,6 +76,9 @@ export async function POST(request: Request) {
     }
 
     logger.info("billing.webhook.subscription_applied", context);
+    if (await completeCheckoutSession(admin, snapshot, userId)) {
+      logger.info("billing.webhook.checkout_completed", context);
+    }
     if (subscriptionGrantsAccess(snapshot)) {
       await detectDuplicateSubscriptions(admin, userId, mode);
     }

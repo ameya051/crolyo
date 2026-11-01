@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { AlertTriangleIcon, CheckIcon, Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
 
-import { openBillingPortal, startCheckout, type BillingActionState } from "@/app/actions/billing";
+import { openBillingPortal, type BillingActionState } from "@/app/actions/billing";
 import { StatusBadge } from "@/components/dashboard/status-badge";
 import { Button } from "@/components/ui/button";
 import { PLAN_NAME, PLANS } from "@/lib/billing/plans";
@@ -108,10 +108,47 @@ function SummaryCard({ title, badge, detail }: { title: string; badge: React.Rea
   );
 }
 
+type CheckoutResponse = {
+  checkoutUrl?: string;
+  error?: string;
+  code?: string;
+  interval?: BillingInterval;
+};
+
 function PlanPicker({ view }: { view: BillingView }) {
   const [interval, setSelectedInterval] = useState<BillingInterval>("monthly");
-  const [state, formAction, pending] = useActionState(startCheckout, initialState);
-  useActionErrorToast(state);
+  const [pending, setPending] = useState(false);
+
+  async function startCheckout(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setPending(true);
+    try {
+      const response = await fetch("/api/billing/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ interval }),
+      });
+      const data = (await response.json().catch(() => ({}))) as CheckoutResponse;
+
+      if (response.ok && data.checkoutUrl) {
+        // Keep the button pending while the browser navigates away.
+        window.location.assign(data.checkoutUrl);
+        return;
+      }
+
+      const openCheckoutUrl = data.checkoutUrl;
+      if (data.code === "checkout_open" && openCheckoutUrl) {
+        toast.error(data.error ?? "You already have a checkout open.", {
+          action: { label: "Continue checkout", onClick: () => window.location.assign(openCheckoutUrl) },
+        });
+      } else {
+        toast.error(data.error ?? "Could not start checkout. Please try again.");
+      }
+    } catch {
+      toast.error("Could not start checkout. Please try again.");
+    }
+    setPending(false);
+  }
 
   return (
     <section className="space-y-4">
@@ -136,8 +173,7 @@ function PlanPicker({ view }: { view: BillingView }) {
         </div>
       </div>
 
-      <form action={formAction} className="rounded-xl border p-5">
-        <input type="hidden" name="interval" value={interval} />
+      <form onSubmit={startCheckout} className="rounded-xl border p-5">
         <div className="flex flex-wrap items-baseline gap-2">
           <span className="font-heading text-3xl font-bold tracking-tight text-foreground">{PLANS[interval].price}</span>
           <span className="text-sm text-muted-foreground">/ {PLANS[interval].period}</span>
@@ -184,7 +220,7 @@ function ManageBilling() {
   );
 }
 
-/** After checkout, refresh until the subscription shows up (sync or webhook). */
+/** After checkout, refresh until the webhook has recorded the subscription. */
 function useCheckoutPolling(active: boolean) {
   const router = useRouter();
   const [polls, setPolls] = useState(0);

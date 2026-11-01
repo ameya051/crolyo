@@ -30,6 +30,8 @@ export type {
   AccessState,
   BillingAccessRow,
   BillingAccountRow,
+  BillingCheckoutSessionRow,
+  BillingCheckoutStatus,
   BillingInterval,
   BillingMode,
   BillingSubscriptionRow,

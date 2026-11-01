@@ -2,6 +2,20 @@ export type BillingMode = "test" | "live"
 
 export type BillingInterval = "monthly" | "annual"
 
+export type BillingCheckoutStatus = "pending" | "open" | "completed" | "expired" | "failed"
+
+export type BillingCheckoutSessionRow = {
+  id: string
+  user_id: string
+  mode: BillingMode
+  interval: BillingInterval
+  status: BillingCheckoutStatus
+  dodo_session_id: string | null
+  checkout_url: string | null
+  expires_at: string
+  created_at: string
+}
+
 export type BillingSubscriptionRow = {
   dodo_subscription_id: string
   mode: BillingMode
