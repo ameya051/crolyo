@@ -1,0 +1,27 @@
+# Crolyo
+
+> Crolyo is a lightweight live chat widget for websites that routes visitor messages into Slack. Teams reply from a Slack thread (desktop or mobile) and the reply is delivered back to the visitor in real time. Built for indie hackers and early-stage founders who want fast support and sales conversations without a helpdesk.
+
+Key facts:
+
+- Setup: add one script tag before the closing `</body>` tag, then connect a Slack channel to the site. Takes about 2 minutes.
+- Widget payload is under 100KB, so it won't hurt Lighthouse scores.
+- Works on any website, with native Next.js support.
+- Pricing: 14-day free trial (no card required), then $8/month or $80/year (2 months free). Payments are processed by Dodo Payments as Merchant of Record.
+- Cancel anytime; access continues until the end of the paid period. Payments are non-refundable except for billing errors or where required by law.
+
+## Pages
+
+- [Home](https://crolyo.ameyashr.in/): Product overview and features
+- [Pricing](https://crolyo.ameyashr.in/pricing): Plans, free trial, and billing FAQ
+- [Sign up](https://crolyo.ameyashr.in/signup): Create an account and start the free trial
+
+## Policies
+
+- [Terms of Service](https://crolyo.ameyashr.in/terms)
+- [Privacy Policy](https://crolyo.ameyashr.in/privacy)
+- [Refund & Cancellation Policy](https://crolyo.ameyashr.in/refund)
+
+## Contact
+
+- Email: ameyshri051@gmail.com
