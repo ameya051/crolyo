@@ -2,7 +2,7 @@
 
 import { RealtimeClient } from "@supabase/realtime-js";
 import { render } from "preact";
-import { useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 
 type WidgetConfig = {
   siteId: string;
@@ -20,7 +20,7 @@ type WidgetSession = {
 
 type WidgetMessage = {
   id: string;
-  senderType: "visitor" | "agent";
+  senderType: "visitor" | "agent" | "ai";
   content: string;
   createdAt: string;
 };
@@ -58,6 +58,8 @@ function appendMessage(messages: WidgetMessage[], incoming: WidgetMessage): Widg
   return [...messages, incoming];
 }
 
+const TYPING_TIMEOUT_MS = 45_000;
+
 function formatTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.valueOf())
@@ -84,6 +86,10 @@ const styles = `
   textarea:focus { border-color:var(--crolyo-color); box-shadow:0 0 0 3px color-mix(in srgb,var(--crolyo-color) 18%,transparent); }
   .send { border:0; border-radius:10px; color:#fff; cursor:pointer; height:38px; padding:0 12px; } .send:disabled { cursor:not-allowed; opacity:.55; }
   .error { color:#b42318; font-size:11px; margin:0 12px 8px; }
+  .typing { align-items:center; display:flex; gap:4px; padding:12px 13px; }
+  .typing span { animation:crolyo-blink 1.2s infinite ease-in-out; background:#8a94a6; border-radius:999px; height:6px; width:6px; }
+  .typing span:nth-child(2) { animation-delay:.15s; } .typing span:nth-child(3) { animation-delay:.3s; }
+  @keyframes crolyo-blink { 0%,80%,100% { opacity:.25; transform:translateY(0); } 40% { opacity:1; transform:translateY(-2px); } }
 `;
 
 function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
@@ -93,7 +99,36 @@ function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
   const [status, setStatus] = useState("Connecting…");
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
+  const [typing, setTyping] = useState(false);
+  const typingTimerRef = useRef<number | null>(null);
   const messagesRef = useRef<HTMLDivElement>(null);
+  const sessionRef = useRef<WidgetSession | null>(null);
+
+  const stopTyping = useCallback(() => {
+    if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
+    typingTimerRef.current = null;
+    setTyping(false);
+  }, []);
+
+  // Shows a neutral "typing" bubble until a reply arrives. If none arrives in
+  // time (e.g. a missed realtime event), re-fetch history as a fallback.
+  const startTyping = useCallback(() => {
+    if (typingTimerRef.current !== null) window.clearTimeout(typingTimerRef.current);
+    setTyping(true);
+    typingTimerRef.current = window.setTimeout(() => {
+      typingTimerRef.current = null;
+      setTyping(false);
+      const current = sessionRef.current;
+      if (!current) return;
+      void fetch(`${apiBase}/api/widget/messages`, { headers: { "X-Crolyo-Session": current.token } })
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload: { messages?: WidgetMessage[] } | null) => {
+          if (payload?.messages) setMessages(payload.messages);
+        })
+        .catch(() => undefined);
+    }, TYPING_TIMEOUT_MS);
+  }, [apiBase]);
+
   const storedSession = useMemo(() => readSession(config.siteId), [config.siteId]);
 
   useEffect(() => {
@@ -149,7 +184,13 @@ function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
     const channel = realtime
       .channel(session.topic, { config: { broadcast: { ack: false, self: false } } })
       .on("broadcast", { event: "message" }, (payload) => {
-        if (active) setMessages((current) => appendMessage(current, payload.payload as WidgetMessage));
+        if (!active) return;
+        const incoming = payload.payload as WidgetMessage;
+        if (incoming.senderType !== "visitor") stopTyping();
+        setMessages((current) => appendMessage(current, incoming));
+      })
+      .on("broadcast", { event: "typing" }, () => {
+        if (active) startTyping();
       })
       .subscribe((nextStatus) => {
         if (!active) return;
@@ -164,15 +205,20 @@ function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
     void refreshMessages().catch(() => setError("Could not load chat history."));
     return () => {
       active = false;
+      stopTyping();
       void realtime.removeChannel(channel);
       realtime.disconnect();
     };
-  }, [apiBase, config.realtime.publishableKey, config.realtime.url, session]);
+  }, [apiBase, config.realtime.publishableKey, config.realtime.url, session, startTyping, stopTyping]);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     const container = messagesRef.current;
     if (container) container.scrollTop = container.scrollHeight;
-  }, [messages]);
+  }, [messages, typing]);
 
   async function sendMessage(event: Event) {
     event.preventDefault();
@@ -186,10 +232,11 @@ function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
         headers: { "Content-Type": "application/json", "X-Crolyo-Session": session.token },
         body: JSON.stringify({ content }),
       });
-      const payload = (await response.json()) as { message?: WidgetMessage; error?: string };
+      const payload = (await response.json()) as { message?: WidgetMessage; awaitingReply?: boolean; error?: string };
       if (!response.ok || !payload.message) throw new Error(payload.error ?? "Could not send message.");
       setMessages((current) => appendMessage(current, payload.message!));
       setInput("");
+      if (payload.awaitingReply) startTyping();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not send message.");
     } finally {
@@ -207,10 +254,11 @@ function ChatApp({ apiBase, config, onClose }: Omit<MountOptions, "shadow">) {
       <div class="messages" ref={messagesRef} aria-live="polite">
         {messages.length === 0 ? <div class="bubble agent">{config.welcomeMessage}</div> : null}
         {messages.map((message) => (
-          <div key={message.id} class={`bubble ${message.senderType}`} style={message.senderType === "visitor" ? { backgroundColor: config.primaryColor } : undefined}>
+          <div key={message.id} class={`bubble ${message.senderType === "visitor" ? "visitor" : "agent"}`} style={message.senderType === "visitor" ? { backgroundColor: config.primaryColor } : undefined}>
             {message.content}<time class="time">{formatTime(message.createdAt)}</time>
           </div>
         ))}
+        {typing ? <div class="bubble agent typing" aria-label="Typing"><span /><span /><span /></div> : null}
       </div>
       {error ? <p class="error" role="alert">{error}</p> : null}
       <form onSubmit={sendMessage}>

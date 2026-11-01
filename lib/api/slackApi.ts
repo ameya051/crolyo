@@ -101,6 +101,34 @@ export async function postSlackMessage(
   }
 }
 
+/** Best-effort delete of a message the bot posted (used to clean up a lost thread race). */
+export async function deleteSlackMessage(
+  botToken: string,
+  input: { channel: string; ts: string }
+): Promise<{ ok: boolean; error?: string }> {
+  const startedAt = Date.now();
+  try {
+    const response = await fetch(`${SLACK_API_BASE}/chat.delete`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${botToken}`,
+        "Content-Type": "application/json; charset=utf-8",
+      },
+      body: JSON.stringify({ channel: input.channel, ts: input.ts }),
+    });
+    const data = (await response.json()) as { ok: boolean; error?: string };
+    logger.info("slack.message.delete.completed", {
+      ok: data.ok,
+      errorCode: data.error,
+      durationMs: Date.now() - startedAt,
+    });
+    return data;
+  } catch (error) {
+    logger.error("slack.message.delete.failed", error, { durationMs: Date.now() - startedAt });
+    return { ok: false, error: "request_failed" };
+  }
+}
+
 export async function uninstallSlackApp(
   botToken: string
 ): Promise<{ ok: boolean; error?: string }> {

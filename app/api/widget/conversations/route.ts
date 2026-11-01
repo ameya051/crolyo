@@ -27,7 +27,11 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
     const { data: conversation, error } = await admin
       .from("conversations")
-      .insert({ site_id: site.id, session_token_hash: hashSessionToken(token) })
+      .insert({
+        site_id: site.id,
+        session_token_hash: hashSessionToken(token),
+        mode: site.ai_agent_enabled ? "ai" : "human",
+      })
       .select("id")
       .single();
 

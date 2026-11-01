@@ -24,3 +24,12 @@ export type {
   WidgetMessage,
   WidgetSite,
 } from "./widget"
+
+export type {
+  ActionResult,
+  KnowledgeConflict,
+  KnowledgeSource,
+  KnowledgeSourceRow,
+} from "./knowledge"
+
+export * from "./enums"
