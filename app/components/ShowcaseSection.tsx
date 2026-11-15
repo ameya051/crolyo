@@ -40,8 +40,8 @@ export default function ShowcaseSection({ id, eyebrow, heading, tabs }: Showcase
         <h2 className={`${sectionHeading} max-w-2xl`}>{heading}</h2>
       </div>
 
-      <div className="grid lg:grid-cols-[2fr_3fr]">
-        <div className="flex flex-col lg:border-r lg:border-border">
+      <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr]">
+        <div className="flex min-w-0 flex-col lg:border-r lg:border-border">
           {tabs.map((tab, i) => {
             const isActive = i === active;
             return (
@@ -50,7 +50,7 @@ export default function ShowcaseSection({ id, eyebrow, heading, tabs }: Showcase
                   type="button"
                   aria-expanded={isActive}
                   onClick={() => setActive(i)}
-                  className={`relative flex h-full w-full cursor-pointer flex-col gap-2 p-4 text-left transition-colors md:p-6 ${
+                  className={`relative flex w-full cursor-pointer flex-col gap-2 p-4 text-left transition-colors md:p-6 lg:h-full ${
                     isActive ? "bg-background" : "bg-muted/40 hover:bg-background"
                   }`}
                 >
@@ -70,7 +70,7 @@ export default function ShowcaseSection({ id, eyebrow, heading, tabs }: Showcase
                   </span>
                 </button>
                 {isActive && (
-                  <div className="flex items-center justify-center border-t border-border bg-muted/40 p-6 lg:hidden">
+                  <div className="flex min-w-0 items-center justify-center border-t border-border bg-muted/40 p-6 lg:hidden">
                     {tab.panel}
                   </div>
                 )}
@@ -79,7 +79,7 @@ export default function ShowcaseSection({ id, eyebrow, heading, tabs }: Showcase
           })}
         </div>
 
-        <div className="hidden min-h-[440px] items-center justify-center bg-muted/40 p-10 lg:flex">
+        <div className="hidden min-h-[440px] min-w-0 items-center justify-center bg-muted/40 p-10 lg:flex">
           <motion.div
             key={active}
             className="flex w-full items-center justify-center"
