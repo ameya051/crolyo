@@ -3,21 +3,22 @@ import { cookies } from "next/headers";
 import { randomBytes } from "crypto";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
+import { getSiteUrl, getSlackRedirectUri } from "@/lib/site-url";
 
-const SLACK_SCOPES =
-  process.env.SLACK_BOT_SCOPES?.split(",") ?? [
-    "chat:write",
-    "channels:read",
-    "groups:read",
-    "channels:history",
-    "groups:history",
-    "channels:write",
-    "groups:write",
-  ];
-
-function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-}
+// Kept in code (not env) so the scopes always match what the OAuth callback relies on.
+// The channel is picked in our dashboard after install (see /api/slack/channels), not on
+// Slack's consent screen, so incoming-webhook is deliberately not requested.
+// - channels:read / groups:read: conversations.list for the picker, conversations.info membership check.
+// - channels:join: lets the bot join the picked public channel.
+// - channels:history / groups:history: thread-reply events from the channel.
+const SLACK_SCOPES = [
+  "chat:write",
+  "channels:read",
+  "groups:read",
+  "channels:history",
+  "groups:history",
+  "channels:join",
+];
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -62,7 +63,7 @@ export async function GET(request: Request) {
   cookieStore.set("slack_oauth_state", state, cookieOptions);
   cookieStore.set("slack_oauth_site_id", siteId, cookieOptions);
 
-  const redirectUri = `${origin}/api/slack/oauth_redirect`;
+  const redirectUri = getSlackRedirectUri();
   const authUrl = new URL("https://slack.com/oauth/v2/authorize");
   authUrl.searchParams.set("client_id", process.env.SLACK_CLIENT_ID);
   authUrl.searchParams.set("scope", SLACK_SCOPES.join(","));

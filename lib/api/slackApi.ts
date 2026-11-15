@@ -44,12 +44,6 @@ export async function exchangeSlackCode(
   }
 }
 
-export interface SlackChannel {
-  id: string;
-  name: string;
-  is_private: boolean;
-}
-
 export interface SlackPostMessageResult {
   ok: boolean;
   ts?: string;
@@ -186,37 +180,125 @@ export async function joinConversation(
   }
 }
 
-export async function listSlackChannels(botToken: string): Promise<SlackChannel[]> {
-  const url = new URL(`${SLACK_API_BASE}/conversations.list`);
-  url.searchParams.set("types", "public_channel,private_channel");
-  url.searchParams.set("exclude_archived", "true");
-  url.searchParams.set("limit", "200");
+export interface SlackConversationInfo {
+  ok: boolean;
+  isMember?: boolean;
+  isPrivate?: boolean;
+  error?: string;
+}
+
+export async function getConversationInfo(
+  botToken: string,
+  channelId: string
+): Promise<SlackConversationInfo> {
+  const url = new URL(`${SLACK_API_BASE}/conversations.info`);
+  url.searchParams.set("channel", channelId);
 
   const startedAt = Date.now();
-  logger.info("slack.channels.request.started");
   try {
     const response = await fetch(url, { headers: { Authorization: `Bearer ${botToken}` } });
-    const data = await response.json();
-    if (!data.ok) {
-      logger.warn("slack.channels.request.rejected", {
-        status: response.status,
-        errorCode: data.error,
-        durationMs: Date.now() - startedAt,
-      });
-      throw new Error(data.error || "Failed to list Slack channels");
-    }
-
-    const channels = (data.channels as SlackChannel[])
-      .filter((channel) => channel.id && channel.name)
-      .map((channel) => ({ id: channel.id, name: channel.name, is_private: channel.is_private }));
-    logger.info("slack.channels.request.succeeded", {
-      status: response.status,
-      channelCount: channels.length,
+    const data = (await response.json()) as {
+      ok: boolean;
+      error?: string;
+      channel?: { is_member?: boolean; is_private?: boolean };
+    };
+    logger.info("slack.conversation.info.completed", {
+      channelId,
+      ok: data.ok,
+      errorCode: data.error,
       durationMs: Date.now() - startedAt,
     });
-    return channels;
+    if (!data.ok || !data.channel) return { ok: false, error: data.error ?? "unknown_error" };
+    return { ok: true, isMember: Boolean(data.channel.is_member), isPrivate: Boolean(data.channel.is_private) };
   } catch (error) {
-    logger.error("slack.channels.request.failed", error, { durationMs: Date.now() - startedAt });
+    logger.error("slack.conversation.info.failed", error, { channelId, durationMs: Date.now() - startedAt });
     throw error;
+  }
+}
+
+export interface SlackChannel {
+  id: string;
+  name: string;
+  isPrivate: boolean;
+}
+
+/**
+ * Channels the admin can route visitor chats to. Public channels come back whether or not the
+ * bot is a member (it can join them); private channels only appear once the bot has been invited.
+ */
+export async function listConversations(botToken: string): Promise<{ ok: true; channels: SlackChannel[] } | { ok: false; error: string }> {
+  const startedAt = Date.now();
+  const channels: SlackChannel[] = [];
+  let cursor: string | undefined;
+  // Cap the pages so a huge workspace can't keep the request open indefinitely.
+  const MAX_PAGES = 10;
+
+  try {
+    for (let page = 0; page < MAX_PAGES; page++) {
+      const url = new URL(`${SLACK_API_BASE}/conversations.list`);
+      url.searchParams.set("types", "public_channel,private_channel");
+      url.searchParams.set("exclude_archived", "true");
+      url.searchParams.set("limit", "200");
+      if (cursor) url.searchParams.set("cursor", cursor);
+
+      const response = await fetch(url, { headers: { Authorization: `Bearer ${botToken}` } });
+      const data = (await response.json()) as {
+        ok: boolean;
+        error?: string;
+        channels?: { id: string; name: string; is_private?: boolean }[];
+        response_metadata?: { next_cursor?: string };
+      };
+
+      if (!data.ok) {
+        logger.warn("slack.conversation.list.rejected", { errorCode: data.error, page });
+        return { ok: false, error: data.error ?? "unknown_error" };
+      }
+
+      for (const channel of data.channels ?? []) {
+        channels.push({ id: channel.id, name: channel.name, isPrivate: Boolean(channel.is_private) });
+      }
+
+      cursor = data.response_metadata?.next_cursor || undefined;
+      if (!cursor) break;
+    }
+
+    logger.info("slack.conversation.list.completed", {
+      channelCount: channels.length,
+      truncated: Boolean(cursor),
+      durationMs: Date.now() - startedAt,
+    });
+    channels.sort((a, b) => a.name.localeCompare(b.name));
+    return { ok: true, channels };
+  } catch (error) {
+    logger.error("slack.conversation.list.failed", error, { durationMs: Date.now() - startedAt });
+    throw error;
+  }
+}
+
+/**
+ * Makes sure the bot can receive thread-reply events from the channel: joins public channels,
+ * and reports false for private ones it hasn't been invited to (bots can't join those).
+ */
+export async function ensureBotInChannel(botToken: string, channelId: string, siteId: string): Promise<boolean> {
+  try {
+    const info = await getConversationInfo(botToken, channelId);
+    if (info.ok && info.isMember) {
+      logger.info("slack.channel.bot_already_member", { siteId, channelId });
+      return true;
+    }
+    if (info.ok && info.isPrivate) {
+      logger.warn("slack.channel.private_channel_needs_invite", { siteId, channelId });
+      return false;
+    }
+
+    // conversations.join returns ok:true (with an already_in_channel warning) if already a member.
+    const join = await joinConversation(botToken, channelId);
+    if (!join.ok) {
+      logger.warn("slack.channel.join_rejected", { siteId, channelId, errorCode: join.error });
+    }
+    return join.ok;
+  } catch (caughtError) {
+    logger.error("slack.channel.membership_check_failed", caughtError, { siteId, channelId });
+    return false;
   }
 }
