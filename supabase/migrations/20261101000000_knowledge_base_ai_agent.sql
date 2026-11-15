@@ -293,61 +293,6 @@ begin
 end;
 $$;
 
--- Claim the next runnable job with a lease. Also recovers jobs whose worker
--- died (expired lease) and fails jobs that have exhausted their attempts.
-create or replace function public.claim_knowledge_job(
-  p_worker_id text,
-  p_lease_seconds integer default 300,
-  p_max_attempts integer default 3
-)
-returns setof public.knowledge_jobs
-language plpgsql
-security invoker
-set search_path = ''
-as $$
-begin
-  with exhausted as (
-    update public.knowledge_jobs
-       set status = 'failed',
-           error = coalesce(error, 'The sync stopped responding too many times.'),
-           locked_by = null,
-           locked_until = null,
-           finished_at = now(),
-           updated_at = now()
-     where status = 'running'
-       and locked_until < now()
-       and attempts >= p_max_attempts
-    returning source_id
-  )
-  update public.knowledge_sources ks
-     set status = 'failed',
-         error = 'The sync stopped responding too many times.',
-         updated_at = now()
-    from exhausted
-   where ks.id = exhausted.source_id;
-
-  return query
-  with candidate as (
-    select id
-      from public.knowledge_jobs
-     where (status = 'queued' and run_after <= now())
-        or (status = 'running' and locked_until < now())
-     order by run_after
-     for update skip locked
-     limit 1
-  )
-  update public.knowledge_jobs j
-     set status = 'running',
-         locked_by = p_worker_id,
-         locked_until = now() + make_interval(secs => p_lease_seconds),
-         attempts = j.attempts + 1,
-         updated_at = now()
-    from candidate
-   where j.id = candidate.id
-  returning j.*;
-end;
-$$;
-
 -- Atomically make `p_version` the live version of a source and drop every
 -- other version's pages and chunks.
 create or replace function public.activate_source_version(
@@ -509,12 +454,10 @@ $$;
 
 -- These run with the service role only (Next.js admin client / worker).
 revoke execute on function public.enqueue_knowledge_job(uuid, public.knowledge_job_kind) from public, anon, authenticated;
-revoke execute on function public.claim_knowledge_job(text, integer, integer) from public, anon, authenticated;
 revoke execute on function public.activate_source_version(uuid, integer) from public, anon, authenticated;
 revoke execute on function public.match_knowledge_chunks(uuid, text, extensions.vector, text, integer) from public, anon, authenticated;
 revoke execute on function public.detect_knowledge_conflicts(uuid, real) from public, anon, authenticated;
 grant execute on function public.enqueue_knowledge_job(uuid, public.knowledge_job_kind) to service_role;
-grant execute on function public.claim_knowledge_job(text, integer, integer) to service_role;
 grant execute on function public.activate_source_version(uuid, integer) to service_role;
 grant execute on function public.match_knowledge_chunks(uuid, text, extensions.vector, text, integer) to service_role;
 grant execute on function public.detect_knowledge_conflicts(uuid, real) to service_role;

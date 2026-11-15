@@ -262,6 +262,29 @@ async def test_claims_are_exclusive_and_expired_leases_are_recovered(
     assert again is not None and again.id == claimed[0].id and again.attempts == 2
 
 
+async def test_exhausted_expired_jobs_fail_the_source(conn: db.Conn) -> None:
+    site_id = await make_site(conn)
+    source_id = await add_text_source(conn, site_id, "FAQ", FAQ)
+    await enqueue(conn, source_id)
+    job = await claim(conn)
+
+    # The worker died on its last allowed attempt.
+    await conn.execute(
+        "update public.knowledge_jobs set attempts = 3, locked_until = now() - interval '1 second'"
+    )
+    assert await db.claim_job(conn, "w2", 300, 3) is None
+
+    cursor = await conn.execute(
+        "select status, locked_by, finished_at from public.knowledge_jobs where id = %s", (job.id,)
+    )
+    row = await cursor.fetchone()
+    assert row is not None and row["status"] == "failed"
+    assert row["locked_by"] is None and row["finished_at"] is not None
+    source = await source_row(conn, source_id)
+    assert source["status"] == "failed"
+    assert source["error"] == "The sync stopped responding too many times."
+
+
 async def test_enqueue_during_a_run_requeues_after_completion(conn: db.Conn) -> None:
     site_id = await make_site(conn)
     source_id = await add_text_source(conn, site_id, "FAQ", FAQ)

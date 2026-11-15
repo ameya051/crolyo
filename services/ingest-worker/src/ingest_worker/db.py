@@ -41,11 +41,58 @@ class Source:
 
 
 async def claim_job(conn: Conn, worker_id: str, lease_seconds: int, max_attempts: int) -> Job | None:
-    cursor = await conn.execute(
-        "select id, source_id, kind, attempts from public.claim_knowledge_job(%s, %s, %s)",
-        (worker_id, lease_seconds, max_attempts),
-    )
-    row = await cursor.fetchone()
+    """Claims the next runnable job with a lease. Also recovers jobs whose worker
+    died (expired lease) and fails jobs that have exhausted their attempts.
+    SKIP LOCKED makes concurrent claims from several workers exclusive."""
+    async with conn.transaction():
+        await conn.execute(
+            """
+            with exhausted as (
+              update public.knowledge_jobs
+                 set status = 'failed',
+                     error = coalesce(error, 'The sync stopped responding too many times.'),
+                     locked_by = null,
+                     locked_until = null,
+                     finished_at = now(),
+                     updated_at = now()
+               where status = 'running'
+                 and locked_until < now()
+                 and attempts >= %s
+              returning source_id
+            )
+            update public.knowledge_sources ks
+               set status = 'failed',
+                   error = 'The sync stopped responding too many times.',
+                   updated_at = now()
+              from exhausted
+             where ks.id = exhausted.source_id
+            """,
+            (max_attempts,),
+        )
+        cursor = await conn.execute(
+            """
+            with candidate as (
+              select id
+                from public.knowledge_jobs
+               where (status = 'queued' and run_after <= now())
+                  or (status = 'running' and locked_until < now())
+               order by run_after
+               for update skip locked
+               limit 1
+            )
+            update public.knowledge_jobs j
+               set status = 'running',
+                   locked_by = %s,
+                   locked_until = now() + make_interval(secs => %s),
+                   attempts = j.attempts + 1,
+                   updated_at = now()
+              from candidate
+             where j.id = candidate.id
+            returning j.id, j.source_id, j.kind, j.attempts
+            """,
+            (worker_id, lease_seconds),
+        )
+        row = await cursor.fetchone()
     if row is None:
         return None
     return Job(row["id"], row["source_id"], KnowledgeJobKind(row["kind"]), row["attempts"])

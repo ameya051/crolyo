@@ -26,7 +26,7 @@ worker: fetch (SSRF-safe) -> extract -> chunk -> hash -> plan N+1 -> embed new c
 - **Triggers:** the dashboard (add, re-sync, edit, replace), the per-source sync
   webhook, and the scheduler, which re-crawls URL sources every 6h, 24h or
   weekly.
-- **Queue:** `claim_knowledge_job()` uses `FOR UPDATE SKIP LOCKED` with a
+- **Queue:** `db.claim_job()` uses `FOR UPDATE SKIP LOCKED` with a
   5-minute lease that is renewed every minute. A crashed worker's job is
   re-claimed when its lease expires. Running several workers is safe.
 
