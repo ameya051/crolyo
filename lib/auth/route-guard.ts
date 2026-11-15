@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { logger } from "@/lib/logger";
-
-function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-}
+import { getSiteUrl } from "@/lib/site-url";
 
 export async function requireUser(): Promise<
   | { user: import("@supabase/supabase-js").User }

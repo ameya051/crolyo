@@ -16,7 +16,8 @@ export const mockSites: Site[] = [
     slackStatus: "connected",
     slackWorkspaceName: "Acme HQ",
     slackChannelName: "#customer-chat",
-    widgetStatus: "installed",
+    aiAgentEnabled: false,
+    aiAgentInstructions: "",
     createdAt: "2026-05-12T10:00:00.000Z",
   },
   {
@@ -29,7 +30,8 @@ export const mockSites: Site[] = [
     slackStatus: "connected",
     slackWorkspaceName: "Indie Blog",
     slackChannelName: "#chat",
-    widgetStatus: "not-installed",
+    aiAgentEnabled: false,
+    aiAgentInstructions: "",
     createdAt: "2026-06-18T09:30:00.000Z",
   }, */
 ]

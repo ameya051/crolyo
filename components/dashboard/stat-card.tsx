@@ -10,11 +10,11 @@ interface StatCardProps {
 
 export function StatCard({ label, value, hint, live, icon }: StatCardProps) {
   return (
-    <Card className="[--card-spacing:1.5rem]">
+    <Card className="rounded-none border-0 [--card-spacing:1.5rem]">
       <CardHeader>
         <CardDescription>{label}</CardDescription>
         {icon ? <CardAction>{icon}</CardAction> : null}
-        <CardTitle className="text-4xl font-extrabold tracking-tight tabular-nums font-heading">
+        <CardTitle className="font-mono text-2xl font-normal tabular-nums">
           {value}
         </CardTitle>
       </CardHeader>

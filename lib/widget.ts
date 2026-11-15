@@ -2,6 +2,7 @@ import { createHash, randomBytes } from "crypto";
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import type {
+  MessageSenderType,
   WidgetConversation,
   WidgetMessage,
   WidgetSite,
@@ -10,6 +11,14 @@ import type {
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export const WIDGET_SESSION_HEADER = "x-crolyo-session";
+
+export const WIDGET_SITE_COLUMNS =
+  "id, name, primary_color, welcome_message, allowed_domains, slack_bot_token, slack_channel_id, ai_agent_enabled, ai_agent_instructions";
+
+export const WIDGET_CONVERSATION_COLUMNS =
+  "id, site_id, slack_thread_ts, mode, escalation_reason, escalation_summary";
+
+export const WIDGET_MESSAGE_COLUMNS = "id, sender_type, content, created_at";
 
 export class WidgetRequestError extends Error {
   constructor(
@@ -98,7 +107,7 @@ export function hashSessionToken(token: string): string {
 
 export function toWidgetMessage(message: {
   id: string;
-  sender_type: "visitor" | "agent";
+  sender_type: MessageSenderType;
   content: string;
   created_at: string;
 }): WidgetMessage {
@@ -122,7 +131,7 @@ export async function requireWidgetSite(request: Request, siteId: string): Promi
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("sites")
-    .select("id, name, primary_color, welcome_message, allowed_domains, slack_bot_token, slack_channel_id")
+    .select(WIDGET_SITE_COLUMNS)
     .eq("id", siteId)
     .maybeSingle();
 
@@ -151,7 +160,7 @@ export async function requireWidgetSession(request: Request): Promise<{
   const admin = createAdminClient();
   const { data: conversation, error: conversationError } = await admin
     .from("conversations")
-    .select("id, site_id, slack_thread_ts")
+    .select(WIDGET_CONVERSATION_COLUMNS)
     .eq("session_token_hash", hashSessionToken(token))
     .maybeSingle();
 

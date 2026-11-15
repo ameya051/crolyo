@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { exchangeSlackCode } from "@/lib/api/slackApi";
+import { ensureBotInChannel, exchangeSlackCode } from "@/lib/api/slackApi";
 import { encrypt } from "@/lib/encryption";
 import { requireUser } from "@/lib/auth/route-guard";
 import { logger } from "@/lib/logger";
+import {
+  getSiteUrl,
+  getSlackOAuthBaseUrl,
+  getSlackRedirectUri,
+  SLACK_OAUTH_REDIRECT_PATH,
+} from "@/lib/site-url";
 
-function getSiteUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+function requestHost(request: Request): string | null {
+  return request.headers.get("x-forwarded-host") ?? request.headers.get("host");
 }
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
+  const { searchParams, search } = new URL(request.url);
+
+  // In dev Slack redirects to the ngrok tunnel, but the state cookies and Supabase session
+  // live on the site URL's host (localhost). Hop back there with the same query string
+  // before touching cookies. The target is the configured site URL, never request input.
+  const siteUrl = new URL(getSiteUrl());
+  const slackHost = new URL(getSlackOAuthBaseUrl()).host;
+  if (slackHost !== siteUrl.host && requestHost(request) === slackHost) {
+    logger.info("slack.oauth.callback.bouncing_to_site_host");
+    return NextResponse.redirect(`${siteUrl.origin}${SLACK_OAUTH_REDIRECT_PATH}${search}`);
+  }
+
   const code = searchParams.get("code");
   const state = searchParams.get("state");
   const error = searchParams.get("error");
@@ -46,7 +63,7 @@ export async function GET(request: Request) {
   const supabase = await createClient();
   const { data: site } = await supabase
     .from("sites")
-    .select("id")
+    .select("id, slack_workspace_id, slack_channel_id")
     .eq("id", siteId)
     .single();
 
@@ -55,7 +72,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/overview?error=slack_unauthorized`);
   }
 
-  const redirectUri = `${origin}/api/slack/oauth_redirect`;
+  const redirectUri = getSlackRedirectUri();
   let oauth: Awaited<ReturnType<typeof exchangeSlackCode>>;
   try {
     oauth = await exchangeSlackCode(code, redirectUri);
@@ -77,12 +94,17 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=error`);
   }
 
+  // Reinstalling into the same workspace keeps the chosen channel. A new workspace (or a first
+  // install) clears it so the dashboard asks the admin to pick one.
+  const keepChannel = site.slack_workspace_id === oauth.team.id && Boolean(site.slack_channel_id);
+
   const { error: dbError } = await supabase
     .from("sites")
     .update({
       slack_workspace_id: oauth.team.id,
       slack_workspace_name: oauth.team.name,
       slack_bot_token: encryptedToken,
+      ...(keepChannel ? {} : { slack_channel_id: null, slack_channel_name: null }),
     })
     .eq("id", siteId);
 
@@ -91,6 +113,13 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=error`);
   }
 
-  logger.info("slack.oauth.callback.succeeded", { siteId, workspaceId: oauth.team.id });
-  return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=installed`);
+  if (!keepChannel) {
+    logger.info("slack.oauth.callback.succeeded", { siteId, workspaceId: oauth.team.id, channelKept: false });
+    return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=choose_channel`);
+  }
+
+  const isMember = await ensureBotInChannel(oauth.access_token, site.slack_channel_id!, siteId);
+  logger.info("slack.oauth.callback.succeeded", { siteId, workspaceId: oauth.team.id, channelKept: true, isMember });
+  const status = isMember ? "installed" : "needs_invite";
+  return NextResponse.redirect(`${origin}/sites/${siteId}?tab=slack&slack=${status}`);
 }

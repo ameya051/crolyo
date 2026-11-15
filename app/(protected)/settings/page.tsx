@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { createClient } from "@/lib/supabase/server";
 import { AccountSettings } from "@/components/dashboard/account-settings";
+import { PageHeader } from "@/components/dashboard/page-header";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -28,14 +29,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
-          Settings
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Manage your profile, appearance, and account.
-        </p>
-      </div>
+      <PageHeader title="Settings" description="Manage your profile, appearance, and account." />
       <AccountSettings profile={{ fullName, email, avatarUrl }} />
     </div>
   );

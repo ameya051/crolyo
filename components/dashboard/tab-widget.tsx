@@ -44,7 +44,7 @@ export function TabWidget({ site }: { site: Site }) {
   return (
     <div className="space-y-8">
       <section>
-        <h2 className="mb-1 font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="mb-1 font-mono text-sm font-medium uppercase text-foreground">
           Live preview
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">
@@ -55,7 +55,7 @@ export function TabWidget({ site }: { site: Site }) {
 
       <form onSubmit={handleSave} className="space-y-5">
         <section>
-          <h2 className="mb-4 font-heading text-base font-semibold tracking-tight text-foreground">
+          <h2 className="mb-4 font-mono text-sm font-medium uppercase text-foreground">
             Customize
           </h2>
           <div className="space-y-4">
@@ -106,18 +106,13 @@ export function TabWidget({ site }: { site: Site }) {
       </form>
 
       <section>
-        <h2 className="mb-1 font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="mb-1 font-mono text-sm font-medium uppercase text-foreground">
           Install on your site
         </h2>
         <p className="mb-4 text-sm text-muted-foreground">
           Paste this snippet before the closing <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">&lt;/body&gt;</code> tag on every page where you want the widget.
         </p>
         <EmbedSnippet siteId={site.id} />
-        {site.widgetStatus === "not-installed" ? (
-          <p className="mt-3 text-xs text-muted-foreground">
-            We haven&apos;t detected the widget on {site.domain} yet. It can take a few minutes after you add the snippet.
-          </p>
-        ) : null}
       </section>
     </div>
   );

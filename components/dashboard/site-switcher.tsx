@@ -55,12 +55,12 @@ export function SiteSwitcher({ sites }: { sites: Site[] }) {
           <DropdownMenuLabel>Your sites</DropdownMenuLabel>
           <DropdownMenuItem
             onClick={() => router.push("/overview")}
-            className={cn(!currentSite && "text-primary")}
+            className={cn(!currentSite && "text-brand")}
           >
             <LayoutGridIcon className="size-4" />
             <span>Overview</span>
             {!currentSite ? (
-              <CheckIcon className="ml-auto size-3.5 text-primary" />
+              <CheckIcon className="ml-auto size-3.5 text-brand" />
             ) : null}
           </DropdownMenuItem>
           {sites.map((site) => {
@@ -69,7 +69,7 @@ export function SiteSwitcher({ sites }: { sites: Site[] }) {
               <DropdownMenuItem
                 key={site.id}
                 onClick={() => router.push(`/sites/${site.id}`)}
-                className={cn(isActive && "text-primary")}
+                className={cn(isActive && "text-brand")}
               >
                 <span
                   className="size-2 rounded-full"
@@ -78,7 +78,7 @@ export function SiteSwitcher({ sites }: { sites: Site[] }) {
                 />
                 <span className="truncate">{site.name}</span>
                 {isActive ? (
-                  <CheckIcon className="ml-auto size-3.5 text-primary" />
+                  <CheckIcon className="ml-auto size-3.5 text-brand" />
                 ) : null}
               </DropdownMenuItem>
             );
