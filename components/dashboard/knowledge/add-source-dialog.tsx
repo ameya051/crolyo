@@ -123,7 +123,7 @@ export function AddSourceDialog({ siteId, onAdded }: { siteId: string; onAdded: 
               <label className="flex cursor-pointer items-start gap-3">
                 <input
                   type="checkbox"
-                  className="mt-0.5 size-4 accent-primary"
+                  className="mt-0.5 size-4 accent-brand"
                   checked={crawl}
                   onChange={(event) => setCrawl(event.target.checked)}
                 />

@@ -45,7 +45,7 @@ export function AgentSettingsCard({ site, readySourceCount }: { site: Site; read
       <CardHeader>
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <span className="flex size-10 items-center justify-center rounded-lg bg-brand/10 text-brand">
               <BotIcon className="size-5" />
             </span>
             <div>
@@ -73,7 +73,7 @@ export function AgentSettingsCard({ site, readySourceCount }: { site: Site; read
         <label className="flex cursor-pointer items-start gap-3">
           <input
             type="checkbox"
-            className="mt-0.5 size-4 accent-primary"
+            className="mt-0.5 size-4 accent-brand"
             checked={enabled}
             onChange={(event) => setEnabled(event.target.checked)}
           />

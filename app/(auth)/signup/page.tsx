@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -46,18 +45,9 @@ export default function SignUpPage() {
 
   if (success) {
     return (
-      <div className="w-full max-w-[400px] bg-card p-8 rounded-[24px] shadow-sm border border-border mx-auto relative overflow-hidden">
+      <div className="w-full max-w-[400px] bg-card p-8 rounded-lg border border-border mx-auto">
         <div className="flex flex-col items-center text-center relative z-10">
-          <Link href="/">
-            <Image
-              src="/logo.png"
-              alt="Crolyo Logo"
-              width={56}
-              height={56}
-              className="mb-4 drop-shadow-sm hover:opacity-80 transition-opacity"
-            />
-          </Link>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
+          <h1 className="font-display text-3xl font-light tracking-[-0.02em] text-foreground">
             Check your email
           </h1>
           <p className="text-sm text-muted-foreground mt-2">
@@ -70,18 +60,9 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="w-full max-w-[400px] bg-card p-8 rounded-[24px] shadow-sm border border-border mx-auto relative overflow-hidden">
+    <div className="w-full max-w-[400px] bg-card p-8 rounded-lg border border-border mx-auto">
       <div className="flex flex-col items-center mb-8 relative z-10">
-        <Link href="/">
-          <Image
-            src="/logo.png"
-            alt="Crolyo Logo"
-            width={56}
-            height={56}
-            className="mb-4 drop-shadow-sm hover:opacity-80 transition-opacity"
-          />
-        </Link>
-        <h1 className="text-xl font-bold tracking-tight text-foreground">
+        <h1 className="font-display text-3xl font-light tracking-[-0.02em] text-foreground">
           Sign up for Crolyo
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -94,7 +75,7 @@ export default function SignUpPage() {
 
       <div className="relative z-10">
         {authError && (
-          <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm text-center">
+          <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-sm text-center">
             {authError}
           </div>
         )}
@@ -102,7 +83,8 @@ export default function SignUpPage() {
         <Button
           onClick={handleGoogleSignIn}
           disabled={googleLoading}
-          className="cursor-pointer w-full flex items-center justify-center gap-2 bg-background border border-border text-foreground font-medium rounded-xl py-3.5 hover:bg-surface transition-colors shadow-sm mb-6 disabled:opacity-50"
+          variant="outline"
+          className="mb-6 h-10 w-full gap-2"
         >
           {googleLoading ? (
             <svg className="w-5 h-5 animate-spin" viewBox="0 0 24 24" fill="none">
@@ -132,12 +114,12 @@ export default function SignUpPage() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="flex gap-3">
             <div className="space-y-2 flex-1">
-              <Label htmlFor="firstName" className="text-xs text-muted-foreground font-semibold px-1">First name</Label>
+              <Label htmlFor="firstName" className="font-mono text-xs uppercase text-muted-foreground">First name</Label>
               <Input
                 id="firstName"
                 type="text"
                 placeholder="John"
-                className="bg-background border-border/60 shadow-sm h-10 rounded-xl px-3.5 focus-visible:ring-1 focus-visible:ring-primary/50"
+                className="h-10 px-3"
                 {...register("firstName")}
               />
               {errors.firstName && (
@@ -145,12 +127,12 @@ export default function SignUpPage() {
               )}
             </div>
             <div className="space-y-2 flex-1">
-              <Label htmlFor="lastName" className="text-xs text-muted-foreground font-semibold px-1">Last name</Label>
+              <Label htmlFor="lastName" className="font-mono text-xs uppercase text-muted-foreground">Last name</Label>
               <Input
                 id="lastName"
                 type="text"
                 placeholder="Doe"
-                className="bg-background border-border/60 shadow-sm h-10 rounded-xl px-3.5 focus-visible:ring-1 focus-visible:ring-primary/50"
+                className="h-10 px-3"
                 {...register("lastName")}
               />
               {errors.lastName && (
@@ -160,12 +142,12 @@ export default function SignUpPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-xs text-muted-foreground font-semibold px-1">Email</Label>
+            <Label htmlFor="email" className="font-mono text-xs uppercase text-muted-foreground">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="bg-background border-border/60 shadow-sm h-10 rounded-xl px-3.5 focus-visible:ring-1 focus-visible:ring-primary/50"
+              className="h-10 px-3"
               {...register("email")}
             />
             {errors.email && (
@@ -175,13 +157,13 @@ export default function SignUpPage() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <Label htmlFor="password" className="text-xs text-muted-foreground font-semibold">Password</Label>
+              <Label htmlFor="password" className="font-mono text-xs uppercase text-muted-foreground">Password</Label>
             </div>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="bg-background border-border/60 shadow-sm h-11 rounded-xl px-4 focus-visible:ring-1 focus-visible:ring-primary/50"
+              className="h-10 px-3"
               {...register("password")}
             />
             {errors.password && (
@@ -192,13 +174,7 @@ export default function SignUpPage() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="cursor-pointer w-full mt-6 font-semibold rounded-xl py-4 transition-all
-              bg-gradient-to-b from-orange-400 to-orange-500 text-white
-              shadow-[inset_0_1px_1px_rgba(255,255,255,0.4),_0_1px_2px_rgba(0,0,0,0.1)]
-              dark:from-orange-500 dark:to-orange-600
-              dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),_0_1px_2px_rgba(0,0,0,0.4)]
-              hover:opacity-90 active:scale-[0.98]
-              ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="mt-6 h-10 w-full"
           >
             {isSubmitting ? "Creating account..." : "Sign up"}
           </Button>

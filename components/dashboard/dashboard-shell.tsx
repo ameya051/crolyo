@@ -10,7 +10,7 @@ export function DashboardShell({ user, children }: { user: DashboardUser; childr
     <SitesProvider>
       <div className="min-h-screen bg-background text-foreground">
         <Topbar user={user} />
-        <main className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-8">{children}</main>
+        <main className="mx-auto min-h-[calc(100vh-3.5rem)] w-full max-w-5xl border-x border-border px-4 py-8 sm:px-6 lg:px-8">{children}</main>
         <Toaster richColors position="bottom-right" />
       </div>
     </SitesProvider>

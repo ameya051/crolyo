@@ -14,21 +14,21 @@ const toneClasses: Record<Tone, string> = {
   success: "bg-slack-green/10 text-slack-green dark:text-slack-green",
   muted: "bg-muted text-muted-foreground",
   warning: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  brand: "bg-primary/10 text-primary",
+  brand: "bg-brand/10 text-brand",
 };
 
 const dotClasses: Record<Tone, string> = {
   success: "bg-slack-green",
   muted: "bg-muted-foreground/60",
   warning: "bg-amber-500 dark:bg-amber-400",
-  brand: "bg-primary",
+  brand: "bg-brand",
 };
 
 export function StatusBadge({ tone, children, dot, pulse, className }: StatusBadgeProps) {
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium whitespace-nowrap",
+        "inline-flex h-6 items-center gap-1.5 rounded-md px-2 font-mono text-[11px] font-medium uppercase whitespace-nowrap",
         toneClasses[tone],
         className
       )}

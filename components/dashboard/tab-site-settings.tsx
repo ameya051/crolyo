@@ -92,7 +92,7 @@ export function TabSiteSettings({ site }: { site: Site }) {
     <div className="space-y-8">
       <form onSubmit={handleSave} className="space-y-5">
         <section className="space-y-4">
-          <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+          <h2 className="font-mono text-sm font-medium uppercase text-foreground">
             Site details
           </h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -145,10 +145,10 @@ export function TabSiteSettings({ site }: { site: Site }) {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="font-mono text-sm font-medium uppercase text-foreground">
           Danger zone
         </h2>
-        <div className="flex flex-col items-start justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-sm font-medium text-foreground">Delete this site</p>
             <p className="text-xs text-muted-foreground">
