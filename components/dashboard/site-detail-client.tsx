@@ -41,11 +41,11 @@ export function SiteDetailClient({ id }: { id: string }) {
         actions={<><StatusBadge tone={site.slackStatus === "connected" ? "success" : site.slackWorkspaceName ? "warning" : "muted"} dot={site.slackStatus === "connected"}>{site.slackStatus === "connected" ? "Slack connected" : site.slackWorkspaceName ? "Finish Slack setup" : "Slack off"}</StatusBadge></>}
       />
       <Tabs defaultValue="overview">
-        <TabsList className="h-9"><TabsTrigger value="overview" className="px-3"><LayoutDashboardIcon className="size-4" /><span>Overview</span></TabsTrigger><TabsTrigger value="widget" className="px-3"><SlidersHorizontalIcon className="size-4" /><span>Widget</span></TabsTrigger><TabsTrigger value="slack" className="px-3"><HashIcon className="size-4" /><span>Slack</span></TabsTrigger><TabsTrigger value="knowledge" className="px-3"><BookOpenIcon className="size-4" /><span>Knowledge</span></TabsTrigger><TabsTrigger value="settings" className="px-3"><SettingsIcon className="size-4" /><span>Settings</span></TabsTrigger></TabsList>
+        <TabsList className="h-9"><TabsTrigger value="overview" className="px-3"><LayoutDashboardIcon className="size-4" /><span>Overview</span></TabsTrigger><TabsTrigger value="widget" className="px-3"><SlidersHorizontalIcon className="size-4" /><span>Widget</span></TabsTrigger><TabsTrigger value="slack" className="px-3"><HashIcon className="size-4" /><span>Slack</span></TabsTrigger><TabsTrigger value="knowledge" className="px-3"><BookOpenIcon className="size-4" /><span>Knowledge</span><StatusBadge tone="brand" className="h-4 px-1.5 text-[10px]">Soon</StatusBadge></TabsTrigger><TabsTrigger value="settings" className="px-3"><SettingsIcon className="size-4" /><span>Settings</span></TabsTrigger></TabsList>
         <TabsContent value="overview" className="mt-6"><TabOverview site={site} stats={stats} conversations={conversations} /></TabsContent>
         <TabsContent value="widget" className="mt-6"><TabWidget site={site} /></TabsContent>
         <TabsContent value="slack" className="mt-6"><TabSlack site={site} /></TabsContent>
-        <TabsContent value="knowledge" className="mt-6"><TabKnowledge site={site} /></TabsContent>
+        <TabsContent value="knowledge" className="mt-6"><TabKnowledge /></TabsContent>
         <TabsContent value="settings" className="mt-6"><TabSiteSettings site={site} /></TabsContent>
       </Tabs>
     </div>
