@@ -35,7 +35,6 @@ function mapSiteRow(row: SitePublicRow): Site {
     slackStatus: slackConnected ? "connected" : "disconnected",
     slackWorkspaceName: row.slack_workspace_name ?? null,
     slackChannelName: row.slack_channel_name ?? null,
-    widgetStatus: "not-installed",
     aiAgentEnabled: row.ai_agent_enabled ?? false,
     aiAgentInstructions: row.ai_agent_instructions ?? "",
     createdAt: row.created_at,

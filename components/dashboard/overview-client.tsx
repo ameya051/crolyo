@@ -63,7 +63,6 @@ export function OverviewClient({ name }: { name: string }) {
                     <CardContent>
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusBadge tone={site.slackStatus === "connected" ? "success" : site.slackWorkspaceName ? "warning" : "muted"} dot={site.slackStatus === "connected"}>{site.slackStatus === "connected" ? "Slack" : site.slackWorkspaceName ? "Slack setup" : "Slack off"}</StatusBadge>
-                        <StatusBadge tone={site.widgetStatus === "installed" ? "success" : "warning"} dot={site.widgetStatus === "installed"}>{site.widgetStatus === "installed" ? "Widget live" : "Widget off"}</StatusBadge>
                       </div>
                       <p className="mt-3 text-xs text-muted-foreground">0 open · 0 visitors this month</p>
                     </CardContent>

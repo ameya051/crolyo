@@ -5,7 +5,6 @@ export type {
   OverviewStats,
   Site,
   SlackConnectionStatus,
-  WidgetInstallStatus,
 } from "./domain"
 
 export type {

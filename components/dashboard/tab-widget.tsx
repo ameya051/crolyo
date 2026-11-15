@@ -113,11 +113,6 @@ export function TabWidget({ site }: { site: Site }) {
           Paste this snippet before the closing <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">&lt;/body&gt;</code> tag on every page where you want the widget.
         </p>
         <EmbedSnippet siteId={site.id} />
-        {site.widgetStatus === "not-installed" ? (
-          <p className="mt-3 text-xs text-muted-foreground">
-            We haven&apos;t detected the widget on {site.domain} yet. It can take a few minutes after you add the snippet.
-          </p>
-        ) : null}
       </section>
     </div>
   );

@@ -4,9 +4,6 @@ export type { ConversationStatus }
 
 export type SlackConnectionStatus = "connected" | "disconnected"
 
-export type WidgetInstallStatus = "installed" | "not-installed"
-
-
 export interface Site {
   id: string
   name: string
@@ -17,7 +14,6 @@ export interface Site {
   slackStatus: SlackConnectionStatus
   slackWorkspaceName: string | null
   slackChannelName: string | null
-  widgetStatus: WidgetInstallStatus
   aiAgentEnabled: boolean
   aiAgentInstructions: string
   createdAt: string
