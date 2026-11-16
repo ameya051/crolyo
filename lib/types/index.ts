@@ -5,7 +5,6 @@ export type {
   OverviewStats,
   Site,
   SlackConnectionStatus,
-  WidgetInstallStatus,
 } from "./domain"
 
 export type {
@@ -37,3 +36,12 @@ export type {
   BillingSubscriptionRow,
   OwnerBillingEmbed,
 } from "./billing"
+
+export type {
+  ActionResult,
+  KnowledgeConflict,
+  KnowledgeSource,
+  KnowledgeSourceRow,
+} from "./knowledge"
+
+export * from "./enums"

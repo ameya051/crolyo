@@ -25,15 +25,12 @@ export function LegalPageLayout({
     <>
       <SiteHeader />
       <main className="flex flex-col">
-        <section className="pt-28 sm:pt-36 pb-12 sm:pb-16 relative overflow-hidden">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 relative">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted/50 border border-border mb-6">
-              <span className="w-1.5 h-1.5 rounded-full bg-slack-green animate-pulse" />
-              <span className="text-xs font-medium text-muted-foreground tracking-wide">
-                {eyebrow}
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.08] max-w-3xl">
+        <section className="pt-14 sm:pt-20 pb-12 sm:pb-16 mb-12 sm:mb-16 border-b border-border">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6">
+            <p className="mb-4 font-mono text-sm font-medium uppercase leading-4 text-brand">
+              {eyebrow}
+            </p>
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-light tracking-[-0.02em] leading-[1.1] max-w-3xl">
               {title}
             </h1>
             <p className="mt-6 text-lg text-muted-foreground max-w-2xl leading-relaxed">

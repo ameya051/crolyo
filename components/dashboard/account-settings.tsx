@@ -69,7 +69,7 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
     <div className="space-y-10">
       <form onSubmit={handleSaveProfile} className="space-y-5">
         <section className="space-y-4">
-          <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+          <h2 className="font-mono text-sm font-medium uppercase text-foreground">
             Profile
           </h2>
           <div className="flex items-center gap-4">
@@ -100,7 +100,7 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="font-mono text-sm font-medium uppercase text-foreground">
           Appearance
         </h2>
         <p className="text-sm text-muted-foreground">
@@ -120,7 +120,7 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
                 }}
                 className={cn(
                   "h-9 gap-2 px-4",
-                  isActive && "border-primary/40 bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary"
+                  isActive && "border-brand/40 bg-brand/10 text-brand hover:bg-brand/10 hover:text-brand"
                 )}
               >
                 <Icon className="size-4" />
@@ -134,7 +134,7 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="font-mono text-sm font-medium uppercase text-foreground">
           Billing
         </h2>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -150,7 +150,7 @@ export function AccountSettings({ profile }: { profile: AccountProfile }) {
       <Separator />
 
       <section className="space-y-4">
-        <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+        <h2 className="font-mono text-sm font-medium uppercase text-foreground">
           Account
         </h2>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

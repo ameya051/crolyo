@@ -16,6 +16,8 @@ export type SitePublicRow = {
   primary_color: string
   welcome_message: string
   allowed_domains: string[]
+  ai_agent_enabled: boolean
+  ai_agent_instructions: string
   created_at: string
   updated_at: string
 }

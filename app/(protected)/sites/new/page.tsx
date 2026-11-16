@@ -59,7 +59,7 @@ export default function NewSitePage() {
             <CheckIcon className="size-5" />
           </span>
           <div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+            <h1 className="font-display text-3xl font-light tracking-[-0.02em] text-foreground">
               {created.name} is ready
             </h1>
             <p className="font-mono text-xs text-muted-foreground">{created.domain}</p>
@@ -117,7 +117,7 @@ export default function NewSitePage() {
   return (
     <div className="mx-auto max-w-2xl space-y-8">
       <div>
-        <h1 className="font-heading text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="font-display text-3xl font-light tracking-[-0.02em] text-foreground">
           Add a new site
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">

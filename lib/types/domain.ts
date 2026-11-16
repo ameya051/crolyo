@@ -1,8 +1,8 @@
+import type { ConversationStatus } from "./enums"
+
+export type { ConversationStatus }
+
 export type SlackConnectionStatus = "connected" | "disconnected"
-
-export type WidgetInstallStatus = "installed" | "not-installed"
-
-export type ConversationStatus = "open" | "closed"
 
 export interface Site {
   id: string
@@ -14,7 +14,8 @@ export interface Site {
   slackStatus: SlackConnectionStatus
   slackWorkspaceName: string | null
   slackChannelName: string | null
-  widgetStatus: WidgetInstallStatus
+  aiAgentEnabled: boolean
+  aiAgentInstructions: string
   createdAt: string
 }
 

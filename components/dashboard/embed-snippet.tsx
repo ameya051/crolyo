@@ -34,7 +34,7 @@ export function EmbedSnippet({ siteId }: { siteId: string }) {
         variant="ghost"
         size="sm"
         onClick={handleCopy}
-        className="absolute right-2 top-2 h-7 gap-1.5 bg-background/80 backdrop-blur-sm"
+        className="absolute right-2 top-2 h-7 gap-1.5 bg-background"
       >
         {copied ? <CheckIcon className="size-3.5 text-slack-green" /> : <CopyIcon className="size-3.5" />}
         <span>{copied ? "Copied" : "Copy"}</span>

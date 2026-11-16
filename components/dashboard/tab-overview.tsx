@@ -16,7 +16,7 @@ export function TabOverview({ site, stats, conversations }: TabOverviewProps) {
 
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 divide-y divide-border overflow-hidden rounded-lg border border-border sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <StatCard
           label="Open conversations"
           value={stats.openConversations}
@@ -40,7 +40,7 @@ export function TabOverview({ site, stats, conversations }: TabOverviewProps) {
 
       <section>
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="font-heading text-base font-semibold tracking-tight text-foreground">
+          <h2 className="font-mono text-sm font-medium uppercase text-foreground">
             Recent conversations
           </h2>
           {conversations.length > 0 ? (
@@ -50,7 +50,7 @@ export function TabOverview({ site, stats, conversations }: TabOverviewProps) {
           ) : null}
         </div>
         {conversations.length > 0 ? (
-          <div className="divide-y divide-border overflow-hidden rounded-xl border border-border bg-card">
+          <div className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-card">
             {conversations.map((c) => (
               <ConversationRow key={c.id} conversation={c} />
             ))}
