@@ -21,11 +21,16 @@ export interface BillingView {
     interval: BillingInterval | null;
     nextBillingOn: string | null;
     cancelAtPeriodEnd: boolean;
+    /** Dodo's next charge is still the trial-end charge. */
+    inTrial: boolean;
   } | null;
   hasCustomer: boolean;
   hasDuplicateSubscriptions: boolean;
   testMode: boolean;
+  /** Back from Dodo checkout without a known failure; the webhook may still be on its way. */
   checkoutReturned: boolean;
+  /** Back from Dodo checkout with a declined or abandoned payment. */
+  checkoutFailed: boolean;
 }
 
 const initialState: BillingActionState = {};
@@ -48,7 +53,7 @@ function StatusSummary({ view }: { view: BillingView }) {
       let detail: string;
       if (subscription?.cancelAtPeriodEnd) {
         detail = `Your plan ends on ${subscription.nextBillingOn}. You won't be charged again, and chat stays online until then.`;
-      } else if (view.trialDaysLeft > 0) {
+      } else if (subscription?.inTrial) {
         detail = `Free until ${subscription?.nextBillingOn}, then ${plan ? `${plan.price}/${plan.period}` : "your plan price"}.`;
       } else {
         detail = `Renews on ${subscription?.nextBillingOn}${plan ? ` for ${plan.price}` : ""}.`;
@@ -238,8 +243,10 @@ function useCheckoutPolling(active: boolean) {
 }
 
 export function BillingSettings({ view }: { view: BillingView }) {
-  const awaitingCheckout = view.checkoutReturned && view.kind !== "subscribed" && view.kind !== "past_due";
+  const hasPlan = view.kind === "subscribed" || view.kind === "past_due";
+  const awaitingCheckout = view.checkoutReturned && !hasPlan;
   const { exhausted } = useCheckoutPolling(awaitingCheckout);
+  const showCheckoutFailed = view.checkoutFailed && !hasPlan;
   const canSubscribe = (view.kind === "trialing" && !view.subscription) || view.kind === "expired";
 
   return (
@@ -259,6 +266,16 @@ export function BillingSettings({ view }: { view: BillingView }) {
         </div>
       ) : null}
 
+      {showCheckoutFailed ? (
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
+          Your payment didn&apos;t go through, so you haven&apos;t been charged. Try again with a different card.
+        </div>
+      ) : null}
+
       {view.hasDuplicateSubscriptions ? (
         <div className="flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-700 dark:text-amber-300">
           <AlertTriangleIcon className="mt-0.5 size-4 shrink-0" aria-hidden />
@@ -268,7 +285,8 @@ export function BillingSettings({ view }: { view: BillingView }) {
 
       <StatusSummary view={view} />
 
-      {canSubscribe && !awaitingCheckout ? <PlanPicker view={view} /> : null}
+      {/* Once polling gives up, offer the picker again so nobody is left without a way forward. */}
+      {canSubscribe && (!awaitingCheckout || exhausted) ? <PlanPicker view={view} /> : null}
 
       {view.hasCustomer ? <ManageBilling /> : null}
     </div>

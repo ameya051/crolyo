@@ -24,6 +24,23 @@ export function remainingTrialDays(trialEndsAt: string, now = new Date()): numbe
   return Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - now.getTime()) / DAY_MS));
 }
 
+/**
+ * Whether Dodo's next charge is still the trial-end charge. The app trial and the
+ * Dodo trial normally end together, but they drift if Dodo's trial ends early
+ * (a manual date change, or scripts/advance-renewal.ts), so trust Dodo's date.
+ * One day of slack covers remainingTrialDays rounding the trial up at checkout.
+ */
+export function isInTrialPeriod(
+  subscription: { next_billing_date: string | null },
+  trialEndsAt: string | null,
+  now = new Date()
+): boolean {
+  if (!trialEndsAt || !subscription.next_billing_date) return false;
+  const trialEnd = new Date(trialEndsAt).getTime();
+  if (trialEnd <= now.getTime()) return false;
+  return new Date(subscription.next_billing_date).getTime() <= trialEnd + DAY_MS;
+}
+
 export function subscriptionGrantsAccess(
   subscription: { status: string; past_due_ends_at?: string | null },
   now = new Date()
