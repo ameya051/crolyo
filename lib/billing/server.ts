@@ -13,8 +13,11 @@ type AdminClient = ReturnType<typeof createAdminClient>;
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** The signed-in user's billing account, read through RLS. Deduplicated per request. */
-export const getCurrentBillingAccount = cache(async (): Promise<BillingAccountRow | null> => {
+/**
+ * The signed-in user's billing account, read through RLS, bypassing the
+ * per-request cache. Use only to re-read after this request changed billing rows.
+ */
+export async function loadCurrentBillingAccount(): Promise<BillingAccountRow | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("users")
@@ -26,7 +29,10 @@ export const getCurrentBillingAccount = cache(async (): Promise<BillingAccountRo
     return null;
   }
   return data as BillingAccountRow | null;
-});
+}
+
+/** The signed-in user's billing account, read through RLS. Deduplicated per request. */
+export const getCurrentBillingAccount = cache(loadCurrentBillingAccount);
 
 /** The user's Dodo customer id, but only if it was created in `mode`. */
 export function customerIdFor(account: BillingAccountRow | null, mode: BillingMode): string | null {

@@ -36,11 +36,14 @@ create table public.billing_subscriptions (
   past_due_ends_at timestamptz,
   last_event_type text not null,
   last_event_at timestamptz not null,
+  -- Last time the reconciliation job compared this row with Dodo; it re-checks stalest first.
+  reconciled_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
 
 create index billing_subscriptions_user_mode_idx on public.billing_subscriptions(user_id, mode);
+create index billing_subscriptions_mode_reconciled_idx on public.billing_subscriptions(mode, reconciled_at);
 
 -- Owners can read their subscriptions; only the service role writes.
 alter table public.billing_subscriptions enable row level security;

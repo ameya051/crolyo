@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { isAuthSessionMissingError } from "@supabase/supabase-js";
 import { logger } from "@/lib/logger";
 
 const publicRoutes = [
@@ -52,7 +53,11 @@ export async function proxy(request: NextRequest) {
   );
 
   const { data: { user }, error } = await supabase.auth.getUser();
-  if (error) logger.error("proxy.auth_lookup.failed", error, { pathname, errorCode: error.code });
+  // No session cookie (anonymous visitor) surfaces as AuthSessionMissingError — that's
+  // the normal signed-out state, not a failure. Only log genuine lookup errors.
+  if (error && !isAuthSessionMissingError(error)) {
+    logger.error("proxy.auth_lookup.failed", error, { pathname, errorCode: error.code });
+  }
 
   // Must run before the public-route early return — /signin and /signup are public,
   // so an authenticated user would otherwise never get redirected to the app.
@@ -90,7 +95,7 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Webhooks are signature-verified by their handlers and never carry a session.
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/webhooks/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Webhooks and scheduled jobs authenticate in their handlers and never carry a session.
+    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|api/webhooks/|api/cron/|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { BillingSettings, type BillingView } from "@/components/dashboard/billing-settings";
 import { getAccessState } from "@/lib/billing/access";
 import { getBillingMode, getIntervalForProduct } from "@/lib/billing/dodo";
-import { customerIdFor, getCurrentBillingAccount } from "@/lib/billing/server";
+import { syncCustomerSubscriptions } from "@/lib/billing/reconcile";
+import { customerIdFor, getCurrentBillingAccount, loadCurrentBillingAccount } from "@/lib/billing/server";
+import { logger } from "@/lib/logger";
 
 export const metadata: Metadata = {
   title: "Billing",
@@ -21,8 +23,22 @@ export default async function BillingPage({
   searchParams: Promise<{ checkout?: string }>;
 }) {
   const { checkout } = await searchParams;
-  const account = await getCurrentBillingAccount();
   const mode = getBillingMode();
+  let account = await getCurrentBillingAccount();
+
+  // Back from checkout but the webhook hasn't landed (or was lost): pull the
+  // subscription from Dodo now instead of showing a locked-out paying user.
+  const dodoCustomerId = customerIdFor(account, mode);
+  if (checkout === "success" && account && dodoCustomerId && !getAccessState(account, mode).subscription) {
+    try {
+      const outcomes = await syncCustomerSubscriptions(mode, { id: account.id, dodoCustomerId });
+      if (outcomes.some((outcome) => outcome === "recovered" || outcome === "corrected")) {
+        account = (await loadCurrentBillingAccount()) ?? account;
+      }
+    } catch (error) {
+      logger.error("billing.reconcile.return_sync_failed", error, { mode });
+    }
+  }
 
   if (!account) {
     return (
