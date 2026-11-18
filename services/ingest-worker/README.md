@@ -60,5 +60,5 @@ uv run python -m ingest_worker.reembed
 
 ## Deploy
 
-Runs on AWS ECS Fargate (ARM64). See `infra/ingest-worker/` for the Terraform
+Runs on AWS ECS Fargate Spot (ARM64). See `infra/ingest-worker/` for the Terraform
 and `.github/workflows/ingest-worker.yml` for CI/CD.

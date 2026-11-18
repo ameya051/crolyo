@@ -178,6 +178,18 @@ resource "aws_ecs_cluster" "this" {
   }
 }
 
+# FARGATE stays registered so falling back to on-demand is a one-line change in
+# the service's capacity_provider_strategy.
+resource "aws_ecs_cluster_capacity_providers" "this" {
+  cluster_name       = aws_ecs_cluster.this.name
+  capacity_providers = ["FARGATE", "FARGATE_SPOT"]
+
+  default_capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+  }
+}
+
 resource "aws_ecs_task_definition" "worker" {
   family                   = var.name
   requires_compatibilities = ["FARGATE"]
@@ -232,7 +244,17 @@ resource "aws_ecs_service" "worker" {
   cluster         = aws_ecs_cluster.this.id
   task_definition = aws_ecs_task_definition.worker.arn
   desired_count   = var.desired_count
-  launch_type     = "FARGATE"
+
+  # Spot is about 70% cheaper, and interruptions are safe for this worker:
+  # Spot gives a 2-minute SIGTERM warning, the worker drains within
+  # SHUTDOWN_GRACE_SECONDS (90s, under stopTimeout = 120), and an interrupted
+  # job is re-claimed once its 5-minute lease expires. Spot does NOT fall back
+  # to on-demand when capacity is short: the task stays pending and the
+  # no-running-tasks alarm fires. Switch capacity_provider to "FARGATE" then.
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE_SPOT"
+    weight            = 1
+  }
 
   # Rolling deploys briefly run old + new tasks side by side, which is safe.
   deployment_minimum_healthy_percent = 100
@@ -253,6 +275,8 @@ resource "aws_ecs_service" "worker" {
   lifecycle {
     ignore_changes = [task_definition]
   }
+
+  depends_on = [aws_ecs_cluster_capacity_providers.this]
 }
 
 # ---------------------------------------------------------------------------

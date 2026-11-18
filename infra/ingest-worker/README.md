@@ -2,8 +2,9 @@
 
 Terraform for the knowledge-base ingest worker (`services/ingest-worker`):
 
-- **ECS Fargate service** (ARM64/Graviton, 0.5 vCPU / 1 GB, 1 task) with the
-  deployment circuit breaker and a container health check.
+- **ECS Fargate Spot service** (ARM64/Graviton, 0.5 vCPU / 1 GB, 1 task) with
+  the deployment circuit breaker and a container health check. Spot
+  interruptions are safe (see [Fargate Spot](#fargate-spot)).
 - **Network:** a dedicated VPC with public subnets and **no NAT gateway**. Tasks
   get a public IP for outbound traffic only. The security group has no ingress
   rules, and egress is limited to TCP 80/443/8080/8443 (web) and 5432
@@ -17,8 +18,8 @@ Terraform for the knowledge-base ingest worker (`services/ingest-worker`):
 - **GitHub OIDC deploy role**, so CI pushes images and updates the service
   without long-lived AWS keys.
 
-Rough cost: about $20/month (Fargate ARM about $15, public IPv4 about $4, and
-pennies for logs and ECR).
+Rough cost: about $8–9/month (Fargate Spot ARM about $4.50, public IPv4 about
+$3.65, and pennies for logs and ECR). On-demand Fargate would be about $18.
 
 ## First-time setup
 
@@ -47,3 +48,31 @@ pennies for logs and ECR).
 The service ignores `task_definition` changes in Terraform, because CI owns
 image rollouts. Changing CPU, memory or env vars here creates a new revision
 that the next CI deploy picks up.
+
+## Fargate Spot
+
+The service runs on `FARGATE_SPOT`. When AWS reclaims capacity, the task gets
+SIGTERM and 2 minutes' notice. The worker stops claiming jobs and drains
+in-flight ones within `SHUTDOWN_GRACE_SECONDS` (90s), and `stopTimeout` (120s)
+fits inside the notice. A job cut off anyway is re-claimed by the replacement
+task when its 5-minute lease expires.
+
+Spot doesn't fall back to on-demand. If Spot capacity is unavailable, the task
+stays pending and the "no running task" alarm fires. To switch to on-demand,
+set `capacity_provider = "FARGATE"` in `aws_ecs_service.worker` and apply.
+
+### Migrating an existing on-demand service
+
+Terraform replaces the service (delete, then create) when it moves from
+`launch_type` to a capacity provider strategy, which stops the worker for a few
+minutes. Queued jobs wait in Postgres, so that's safe. To avoid the gap, switch
+the live service first, then apply:
+
+```bash
+terraform apply -target=aws_ecs_cluster_capacity_providers.this
+aws ecs update-service --cluster crolyo-ingest-worker --service crolyo-ingest-worker \
+  --capacity-provider-strategy capacityProvider=FARGATE_SPOT,weight=1 \
+  --force-new-deployment
+terraform plan   # should show no replacement of aws_ecs_service.worker
+terraform apply
+```
